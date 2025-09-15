@@ -1,23 +1,8 @@
-// import React from 'react'
-// import Login from './pages/Login'
-// import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-// import { routing } from './router/routing'
-// const App = () => {
-//   return (
-//     <>
-    
-//     <RouterProvider router={routing}/>
-//     </>
-//   )
-// }
-// export default App
-
 
 import React, { Suspense } from 'react';
 import { RouterProvider } from 'react-router-dom';
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { routing } from './components/router/routing';
+import { AdapterDateFns } from '@date-io/date-fns';
 
 const App = () => {
   return (
