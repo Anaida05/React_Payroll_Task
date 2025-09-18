@@ -1,7 +1,78 @@
-.leftImage {
-  width: 100%;
+.loginContainer {
+  display: flex;
   height: 100vh;
+  overflow: hidden;
+}
+.imageSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  overflow: hidden;
+}
+.imageSection img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+}
+
+.formSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  overflow: hidden;
+}
+
+.loginPaper {
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+}
+
+.loginAvatar {
+  margin: 0 auto;
+  background-color: var(--mui-secondary-main);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.loginTitle {
+  text-align: center;
+  color: black;
+}
+
+.overlayText {
+  position: absolute;
+  top: 75%;
+  left: 20%;
+  transform: translate(-50%, -50%);
+  color: white;
+  width: 30%;
+  text-align: left;
+  pointer-events: none;
+}
+.orText h4 {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+.overlayText p {
+  font-size: 1rem;
+}
+
+.signInButton {
+  background-color: #384ad7 !important;
+  color: white;
+}
+.signInButton:hover {
+  background-color: #6b78da !important;
+}
+
+.signInButton:disabled {
+  background-color: #cccccc !important;
+  cursor: not-allowed;
 }
 
 .formContainer {

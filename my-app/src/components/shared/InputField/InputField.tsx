@@ -1,6 +1,6 @@
 import React from "react";
 import { Field, ErrorMessage, FieldProps } from "formik";
-import styles from "./Input.module.scss";
+import styles from "./Input.module.css";
 
 interface InputProps {
   label: string;

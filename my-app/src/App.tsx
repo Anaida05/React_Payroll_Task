@@ -2,7 +2,8 @@
 import React, { Suspense } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { routing } from './components/router/routing';
-import { AdapterDateFns } from '@date-io/date-fns';
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from '@mui/x-date-pickers';
 
 const App = () => {
   return (

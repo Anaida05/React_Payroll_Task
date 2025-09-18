@@ -3,10 +3,9 @@ import { getToken } from '../../utils/utils'
 import { Navigate } from 'react-router-dom'
 
 interface PublicRouteProps{
-    component : React.ComponentType<any>
-}
-const PublicRoute : React.FC<PublicRouteProps> = ({component : Component}) => {
-  return getToken() ? <Component/> : <Navigate to="/login"/>
+children : React.ReactNode}
+const PublicRoute : React.FC<PublicRouteProps> = ({children}) => {
+  return getToken() ? <Navigate to="/dashboard" replace/>: <>{children}</> 
 }
 
 export default PublicRoute;

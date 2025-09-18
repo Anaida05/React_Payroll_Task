@@ -6,16 +6,21 @@ import {
   Button,
   CircularProgress,
 } from "@mui/material";
-import { Formik, Form } from "formik";
+import { Formik, Form, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import Input from "../../shared/InputField/InputField";
-import loginImage from "../../assets/jpg/login-page-slider1.jpg";
-import ffcLogo from "../../assets/png/FFC-logo.png";
+import FormikControl from "../../shared/Formik/FormikControl";
+import loginImage from "../../../assets/jpg/loginPage.jpg";
+import ffcLogo from "../../../assets/png/FFCLogo.png";
 import { LOGIN } from "../../services/apiEndPoints";
 import publicRequest from "../../services/publicRequest";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import styles from "./Login.module.scss";
+import styles from "./Login.module.css";
+
+interface LoginFormValues {
+  username: string;
+  password: string;
+}
 
 const validationSchema = Yup.object({
   username: Yup.string()
@@ -26,26 +31,32 @@ const validationSchema = Yup.object({
   password: Yup.string().required("Password is required"),
 });
 
-const Login = () => {
-  const [loader, setLoader] = useState(false);
+const Login: React.FC = () => {
   const navigate = useNavigate();
 
-  const initialValues = {
+  const initialValues: LoginFormValues = {
     username: "",
     password: "",
   };
 
-  const handleSubmit = async (values: typeof initialValues) => {
+  const handleSubmit = async (
+    values: LoginFormValues,
+    { setSubmitting }: FormikHelpers<LoginFormValues>
+  ) => {
     try {
       const res = await publicRequest.post(LOGIN, values);
       const combined = `${values.username}:${values.password}`;
       const base64Encoded = btoa(combined);
+
       localStorage.setItem("UserId", res.data.userDetail.data.UserId);
       localStorage.setItem("token", base64Encoded);
+
       toast.success("Login Successful");
       navigate("/dashboard");
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Error occurred in login");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -62,12 +73,16 @@ const Login = () => {
       <Box className={styles.formSection}>
         <Container maxWidth="xs">
           <div className={styles.loginAvatar}>
-            <img src={ffcLogo} alt="Login Logo" className={styles.loginPaper} />
+            <img
+              src={ffcLogo}
+              alt="Login Visual"
+              className={styles.loginPaper}
+            />
             <div className={styles.overlayText}>
               <h4>Daily Employee Attendance tracking</h4>
               <p>
-                Monitor your employee’s Check-In, Check-Out time and attendance
-                anytime from anywhere.
+                Application allows you to monitor your employee’s Check-In,
+                Check-Out time and attendance from anywhere and at any time.
               </p>
             </div>
           </div>
@@ -82,24 +97,23 @@ const Login = () => {
             onSubmit={handleSubmit}
           >
             {(formik) => {
-              setLoader(formik.isSubmitting);
               return (
                 <Form>
                   <Box sx={{ mt: 1 }}>
-                    <Input
+                    <FormikControl
+                      control="input"
                       label="Username"
                       name="username"
                       type="text"
                       placeholder="Enter username"
-                      required={true}
                     />
 
-                    <Input
+                    <FormikControl
+                      control="input"
                       label="Password"
                       name="password"
                       type="password"
                       placeholder="Enter password"
-                      required={true}
                     />
 
                     <Button
@@ -110,7 +124,7 @@ const Login = () => {
                       sx={{ mt: 2 }}
                       disabled={!(formik.isValid && formik.dirty)}
                     >
-                      {loader ? (
+                      {formik.isSubmitting ? (
                         <>
                           <CircularProgress
                             size={20}
