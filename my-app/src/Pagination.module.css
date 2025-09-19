@@ -1,0 +1,26 @@
+
+.pagination {
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    padding: 0;
+    justify-content: center; 
+  }
+  
+  .pagination li {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .pagination .active {
+    background-color: #1976d2; /* MUI Primary Blue */
+    color: white;
+    font-weight: bold;
+  }
+  
+  /* Hover Effect */
+  .pagination li:hover {
+    background-color: #eeeeee; /* Light hover effect */
+  }
