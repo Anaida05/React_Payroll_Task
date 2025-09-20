@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ADDTASK, MYTASK } from "../../services/apiEndPoints";
-import { privatePost } from "../../services/privateRequest";
+import { ADDTASK, MYTASK } from "../services/apiEndPoints";
+import { privatePost } from "../services/privateRequest";
 import toast from "react-hot-toast";
 
 interface Task {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyTask, setFilterApplied } from "../../store/slices/myTaskSlice";
+import { fetchMyTask, setFilterApplied } from "../../slices/myTaskSlice";
 import DataTable from "react-data-table-component";
 import { fetchTeamMembers, UserId } from "../../../utils/utils";
 import ReactPaginate from "react-paginate";
@@ -26,7 +26,7 @@ import styles from "./Mytask.module.css";
 import classes from "../../../Pagination.module.css";
 import TaskPercentageModal from "../../shared/Modal/TaskPercentageModal";
 import dayjs from "dayjs";
-import Loader from "components/shared/Loader/Loader";
+import Loader from "../../shared/Loader/Loader";
 
 // Types for task, params, and dispatch
 interface Task {

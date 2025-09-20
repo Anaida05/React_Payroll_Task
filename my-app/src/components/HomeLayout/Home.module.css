@@ -1,0 +1,19 @@
+.mainDiv {
+  display: flex;
+  flex-direction: row;
+}
+.leftSidebar {
+  width: 15%;
+  padding: 0px;
+}
+.rightSidebar {
+  width: 85%;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+}
+.contain {
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+}
