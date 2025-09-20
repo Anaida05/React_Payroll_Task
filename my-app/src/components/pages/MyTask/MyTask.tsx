@@ -136,7 +136,7 @@ const MyTask: React.FC = () => {
               >
                 <div className={styles.accordionTitle}>
                   <span className={styles.accordionIcon}>{isAccordionOpen ? "▼" : "►"}</span>
-                  <span>({tasks?.length || 0})</span>
+                  <span>Pending Tasks({tasks?.length || 0})</span>
                 </div>
               </div>
 
