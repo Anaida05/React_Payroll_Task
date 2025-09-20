@@ -3,7 +3,7 @@ import Modal from "../../shared/Modal/Modal";
 import { Button } from "@mui/material";
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import FormikControl from "../../shared/formik/FormikControl";
+import FormikControl from "../../shared/Formik/FormikControl";
 import dayjs from "dayjs";
 import { privatePost } from "../../services/privateRequest";
 import { ADDTASK } from "../../services/apiEndPoints";

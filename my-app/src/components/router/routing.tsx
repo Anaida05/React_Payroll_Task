@@ -3,6 +3,10 @@ import { createBrowserRouter } from "react-router-dom";
 import PrivateRoute from "../routes/PrivateRoute";
 import PublicRoute from "../routes/PublicRoutes";
 import HomeLayout from "../HomeLayout/HomeLayout";
+import Customers from "../../components/pages/Customers";
+import Deal from "../../components/pages/Deal";
+import Attendance from "../../components/pages/Attendance";
+import MyTeam from "../../components/pages/MyTeam";
 
 const Login = lazy(() => import("../pages/Login/Login"));
 const Dashboard = lazy(() => import("../pages/Dashboard/Dashboard"));
@@ -31,6 +35,10 @@ export const routing = createBrowserRouter([
     children: [
       { path: "dashboard", element: <Dashboard /> },
       { path: "mytask", element: <MyTask /> },
+      { path: "myteam", element: <MyTeam /> },
+      { path: "attendance", element: <Attendance /> },
+      { path: "deals", element: <Deal /> },
+      { path: "mycustomers", element: <Customers /> },
     ],
   },
 ]);

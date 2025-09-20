@@ -71,7 +71,20 @@ export const privatePost = <T>(
   endPoint: string,
   data: unknown,
   config: AxiosRequestConfig = {}
-): Promise<AxiosResponse<T>> => privateRequest.post<T>(endPoint, data, config);
+): Promise<AxiosResponse<T>> => {
+  console.log("API Request:", endPoint, data); 
+
+  return privateRequest.post<T>(endPoint, data, config)
+    .then(response => {
+      console.log("API Response:", response);  
+      return response;
+    })
+    .catch(error => {
+      console.error("API Error:", error);  
+      throw error;
+    });
+};
+
 
 export const privatePut = <T>(
   endPoint: string,

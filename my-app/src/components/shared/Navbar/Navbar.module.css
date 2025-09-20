@@ -1,27 +1,41 @@
-.navDiv{
-    display:flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 10px;
-    margin:0;
-    padding: 10px 0px;
+/* Navbar.module.css */
+.container {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ccc;
+  align-items: center;
 }
-.navElement{
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
+.navbarStyle {
 }
-.navElement p{
-    margin:0;
-    cursor: pointer;
+
+.centerSectionStyle {
+  font-size: 16px;
+  font-weight: bold;
+  color: #5d78ff;
+  margin-left: 18rem;
+  display: flex;
+  gap: 1.5rem;
 }
-.logoutBtn{
-    padding: 8px 17px;
-    font-family: sans-serif;
-    background-color: #5d78ff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+
+.rightSectionStyle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.buttonStyle {
+  background-color: #5d78ff;
+  color: #fff;
+  border: none;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.buttonStyle :hover{
+  background-color: #5d78ff;
+  color: #fff;
+  cursor: pointer;
 }

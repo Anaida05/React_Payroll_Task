@@ -1,4 +1,4 @@
-.mainDiv {
+/* .mainDiv {
   display: flex;
   flex-direction: row;
 }
@@ -16,4 +16,27 @@
   display: flex;
   gap: 15px;
   flex-direction: column;
+} */
+
+/* Home.module.css */
+.parentContainer {
+  display: flex;
+}
+
+.leftContainer {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.rightContainer {
+  margin-left: 250px;
+  width: calc(100% - 250px);
+  padding: 20px;
+}
+
+.outletContent {
+  margin-top: 20px; 
 }

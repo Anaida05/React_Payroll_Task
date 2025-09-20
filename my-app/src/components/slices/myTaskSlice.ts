@@ -28,7 +28,9 @@ export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
   async (params: FetchMyTaskParams) => {
     const res = await privatePost(MYTASK, params);
-    return { data: res.data.data, params };
+    console.log("task",res);
+    
+    return { data: res?.data?.data?.Pending, params };
   }
 );
 
@@ -71,8 +73,8 @@ const taskSlice = createSlice({
     });
     builder.addCase(fetchMyTask.fulfilled, (state, action) => {
       state.loading = false;
-      state.task = action.payload.data.TaskList;
-      state.totalCount = action.payload.data.TotalCount;
+      state.task = action.payload.data;
+      state.totalCount = action.payload.data.length;
       state.lastParams = action.payload.params;
     });
     builder.addCase(fetchMyTask.rejected, (state) => {

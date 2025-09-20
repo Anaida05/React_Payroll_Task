@@ -78,7 +78,7 @@ const Login: React.FC = () => {
               className={styles.loginPaper}
             />
             <div className={styles.overlayText}>
-              <h4>Dailyyyyyyyyyyy Employee Attendance tracking</h4>
+              <h4>Daily Employee Attendance tracking</h4>
               <p>
                 Application allows you to monitor your employees Check-In,
                 Check-Out time and attendance from anywhere and at any time.
