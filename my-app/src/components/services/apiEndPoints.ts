@@ -6,7 +6,7 @@ export const MYTASK = "Task/v1/TaskDetails";
 export const ADDTASK = "Task/v1/AddTask";
 export const DELETE_TASK = "Task/DeleteTask"; 
 export const UPDATE_TASK_STATUS = "Task/UpdateTaskStatus"; 
-export const UPDATE_TASK_FIELD = "Task/v1/TaskStatus";
+export const STARRED_TASK_FIELD = "Task/v1/TaskStatus";
 export const UNDO_TASK = "Task/v1/UndoTask";
 
 // CRM

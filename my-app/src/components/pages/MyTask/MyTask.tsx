@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyTask, setFilterApplied } from "../../slices/myTaskSlice";
-import { Button, CircularProgress, Tooltip, Checkbox, IconButton, Radio } from "@mui/material";
+import { fetchMyTask, setFilterApplied, updateStarStatus } from "../../slices/myTaskSlice";
+import {
+  Button,
+  CircularProgress,
+  Tooltip,
+  IconButton,
+  Radio,
+} from "@mui/material";
 import { Star, StarBorder } from "@mui/icons-material";
 import styles from "./Mytask.module.css";
 import dayjs from "dayjs";
@@ -36,14 +42,15 @@ const MyTask: React.FC = () => {
     Title: debouncedSearch,
   };
 
-  const { task, totalCount, loading } = useSelector((state: any) => state.myTask);
+  const { task, totalCount, loading } = useSelector(
+    (state: any) => state.myTask
+  );
 
   useEffect(() => {
     if (task) {
-      // Initialize tasks with starred status
       const tasksWithStars = task.map((taskItem: Task) => ({
         ...taskItem,
-        Starred: false // Default to not starred
+        Starred: false,
       }));
       setTasks(tasksWithStars);
     }
@@ -66,12 +73,14 @@ const MyTask: React.FC = () => {
     setActiveTab(tabName);
   };
 
-  const toggleStar = (taskId: number) => {
-    setTasks(prevTasks => 
-      prevTasks.map(task => 
-        task.TaskId === taskId ? { ...task, Starred: !task.Starred } : task
-      )
-    );
+  const toggleStar = (taskItem: Task) => {
+    const newStarredStatus = !taskItem.Starred
+    dispatch(updateStarStatus({
+      TaskId: taskItem.TaskId,
+      Fieldname : "IsFavourite",
+      IsMyTask : true,
+      Value : newStarredStatus
+    }))
   };
 
   return (
@@ -97,25 +106,33 @@ const MyTask: React.FC = () => {
       {/* Tab Navigation Header */}
       <div className={styles.tabContainer}>
         <div
-          className={`${styles.tab} ${activeTab === "My Task" ? styles.activeTab : ""}`}
+          className={`${styles.tab} ${
+            activeTab === "My Task" ? styles.activeTab : ""
+          }`}
           onClick={() => handleTabChange("My Task")}
         >
           My Task
         </div>
         <div
-          className={`${styles.tab} ${activeTab === "Assigned By Me" ? styles.activeTab : ""}`}
+          className={`${styles.tab} ${
+            activeTab === "Assigned By Me" ? styles.activeTab : ""
+          }`}
           onClick={() => handleTabChange("Assigned By Me")}
         >
           Assigned By Me
         </div>
         <div
-          className={`${styles.tab} ${activeTab === "CC" ? styles.activeTab : ""}`}
+          className={`${styles.tab} ${
+            activeTab === "CC" ? styles.activeTab : ""
+          }`}
           onClick={() => handleTabChange("CC")}
         >
           CC
         </div>
         <div
-          className={`${styles.tab} ${activeTab === "Starred" ? styles.activeTab : ""}`}
+          className={`${styles.tab} ${
+            activeTab === "Starred" ? styles.activeTab : ""
+          }`}
           onClick={() => handleTabChange("Starred")}
         >
           Starred
@@ -135,7 +152,9 @@ const MyTask: React.FC = () => {
                 onClick={() => setIsAccordionOpen(!isAccordionOpen)}
               >
                 <div className={styles.accordionTitle}>
-                  <span className={styles.accordionIcon}>{isAccordionOpen ? "▼" : "►"}</span>
+                  <span className={styles.accordionIcon}>
+                    {isAccordionOpen ? "▼" : "►"}
+                  </span>
                   <span>Pending Tasks({tasks?.length || 0})</span>
                 </div>
               </div>
@@ -146,7 +165,7 @@ const MyTask: React.FC = () => {
                   {tasks?.map((taskItem: Task) => (
                     <div key={taskItem.TaskId} className={styles.taskItem}>
                       <Radio className={styles.checkbox} />
-                      
+
                       {/* Left side: Title and time */}
                       <div className={styles.taskLeft}>
                         <div className={styles.taskTitle}>{taskItem.Title}</div>
@@ -156,19 +175,21 @@ const MyTask: React.FC = () => {
                       </div>
 
                       {/* Right side: Star icon, Progress circle and actions */}
-                      <div className={styles.taskRight}>                     
+                      <div className={styles.taskRight}>
                         <div className={styles.taskProgress}>
-                          <span className={styles.progressPercentage}>{taskItem.TaskStatus}%</span>
+                          <span className={styles.progressPercentage}>
+                            {taskItem.AssignedToUsers?.[0]?.TaskStatus}%
+                          </span>
                           <CircularProgress
                             variant="determinate"
-                            value={parseFloat(taskItem.TaskStatus || "0")}
+                            value={parseFloat(taskItem.AssignedToUsers?.[0]?.TaskStatus || "0")}
                             size={30}
                             thickness={4}
                             className={styles.circularProgress}
                           />
                         </div>
-                        <IconButton 
-                          onClick={() => toggleStar(taskItem.TaskId)}
+                        <IconButton
+                          onClick={() => toggleStar(taskItem)}
                           className={styles.starButton}
                           size="small"
                         >

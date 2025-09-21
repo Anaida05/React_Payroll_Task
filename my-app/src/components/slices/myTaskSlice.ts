@@ -1,11 +1,18 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ADDTASK, MYTASK } from "../services/apiEndPoints";
-import { privatePost } from "../services/privateRequest";
+import { ADDTASK, MYTASK, STARRED_TASK_FIELD } from "../services/apiEndPoints";
+import { privatePost, privatePut } from "../services/privateRequest";
 import toast from "react-hot-toast";
 
 interface Task {
   TaskId: number;
   Title: string;
+  AssignedByUserName: string;
+  CreateDate: string;
+  TaskStatus: string;
+  Starred?: boolean;
+  AssignedToUsers?: Array<{
+    TaskStatus: string;
+  }>;
 }
 
 interface TaskState {
@@ -23,28 +30,54 @@ interface FetchMyTaskParams {
   UserId: string;
   Title: string;
 }
+interface AddTaskParams {
+  Title: string;
+  Description: string;
+}
+interface UpdatedStarStatus {
+  TaskId: number;
+  Value: boolean;
+  FieldName: string;
+  IsMyTask: boolean;
+}
 
 export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
   async (params: FetchMyTaskParams) => {
     const res = await privatePost(MYTASK, params);
-    console.log("task",res);
-    
+    console.log("task", res);
+
     return { data: res?.data?.data?.Pending, params };
   }
 );
 
-interface AddTaskParams {
-  Title: string;
-  Description: string;
-}
+export const addTask = createAsyncThunk(
+  "post/addTask",
+  async (params: AddTaskParams) => {
+    const res = await privatePost(ADDTASK, params);
+    toast.success("New task added successfully");
+    return res;
+  }
+);
 
-export const addTask = createAsyncThunk("post/addTask", async (params: AddTaskParams) => {
-  const res = await privatePost(ADDTASK, params);
-  toast.success("New task added successfully");
-  return res;
-});
-
+export const updateStarStatus = createAsyncThunk(
+  "put/updatedStarredStatus",
+  async (params: UpdatedStarStatus, { rejectWithValue }) => {
+    try {
+      const urlWithTaskId = `${STARRED_TASK_FIELD}?taskId=${params.TaskId}`;
+       const payload = {
+        FieldName: params.FieldName,
+        IsMyTask: params.IsMyTask,
+        Value: params.Value
+      };
+      await privatePut(urlWithTaskId, payload);
+      return params;
+    } catch (error: any) {
+      toast.error("Failed to update star status.");
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
 const initialState: TaskState = {
   task: [],
   totalCount: 0,
@@ -79,6 +112,16 @@ const taskSlice = createSlice({
     });
     builder.addCase(fetchMyTask.rejected, (state) => {
       state.loading = false;
+      state.error = true;
+    });
+    builder.addCase(updateStarStatus.fulfilled, (state, action) => {
+      const { TaskId, Value } = action.payload;
+      const taskToUpdate = state.task.find((task) => task.TaskId === TaskId);
+      if (taskToUpdate) {
+        taskToUpdate.Starred = Value;
+      }
+    });
+    builder.addCase(updateStarStatus.rejected, (state, action) => {
       state.error = true;
     });
   },
