@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyTask, setFilterApplied, updateStarStatus } from "../../slices/myTaskSlice";
+import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams } from "../../slices/myTaskSlice";
 import {
   Button,
   CircularProgress,
@@ -23,6 +23,10 @@ interface Task {
   CreateDate: string;
   TaskStatus: string;
   Starred?: boolean;
+  IsFavourite: boolean;
+  AssignedToUsers?: Array<{
+    TaskStatus: string;
+  }>;
 }
 
 const MyTask: React.FC = () => {
@@ -34,12 +38,23 @@ const MyTask: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("My Task");
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<any>();
 
-  const taskParams = {
-    From: currentPage * itemsPerPage + 1,
-    To: (currentPage + 1) * itemsPerPage,
-    Title: debouncedSearch,
+  const getTaskParams = (): FetchMyTaskParams => {
+    const params: FetchMyTaskParams = {
+      From: currentPage * itemsPerPage + 1,
+      To: (currentPage + 1) * itemsPerPage,
+      Title: debouncedSearch,
+    };
+
+    // Explicitly filter tasks based on the active tab
+    if (activeTab === "Starred") {
+      params.IsFavourite = true; // Fetch only starred tasks
+    } else if (activeTab === "My Task") {
+      params.IsFavourite = false; // Fetch only non-starred tasks
+    }
+
+    return params;
   };
 
   const { task, totalCount, loading } = useSelector(
@@ -50,15 +65,16 @@ const MyTask: React.FC = () => {
     if (task) {
       const tasksWithStars = task.map((taskItem: Task) => ({
         ...taskItem,
-        Starred: false,
+        Starred: taskItem.IsFavourite,
       }));
       setTasks(tasksWithStars);
     }
   }, [task]);
 
   useEffect(() => {
-    if (activeTab === "My Task") {
-      dispatch(fetchMyTask(taskParams));
+    if (activeTab === "My Task" || activeTab === "Starred") {
+      const params = getTaskParams();
+      dispatch(fetchMyTask(params));
     }
   }, [dispatch, itemsPerPage, currentPage, debouncedSearch, activeTab]);
 
@@ -70,16 +86,48 @@ const MyTask: React.FC = () => {
   }, [search]);
 
   const handleTabChange = (tabName: string) => {
-    setActiveTab(tabName);
+    if (tabName !== activeTab) {
+      setActiveTab(tabName);
+      setCurrentPage(0);
+    }
   };
 
   const toggleStar = (taskItem: Task) => {
-    const newStarredStatus = !taskItem.Starred
+    const newStarredStatus = !taskItem.Starred;
+
+    // 1. Optimistic Update/Removal of the task from the local list
+    setTasks(prevTasks => {
+
+      // Scenario 1: Starring a task while on the "My Task" tab
+      // Condition: On My Task tab AND Starred status is becoming TRUE
+      if (activeTab === "My Task" && newStarredStatus) {
+        // REMOVE the task from the 'My Task' list immediately.
+        return prevTasks.filter(t => t.TaskId !== taskItem.TaskId);
+      }
+
+      // Scenario 2: Unstarring a task while on the "Starred" tab
+      // Condition: On Starred tab AND Starred status is becoming FALSE
+      else if (activeTab === "Starred" && !newStarredStatus) {
+        // REMOVE the task from the 'Starred' list immediately.
+        return prevTasks.filter(t => t.TaskId !== taskItem.TaskId);
+      }
+
+      // Scenario 3: Default (only update local status/star icon)
+      else {
+        return prevTasks.map(t =>
+          t.TaskId === taskItem.TaskId
+            ? { ...t, Starred: newStarredStatus, IsFavourite: newStarredStatus }
+            : t
+        );
+      }
+    });
+
+    // 2. Dispatch the async update (This triggers the Redux state update and re-fetch)
     dispatch(updateStarStatus({
       TaskId: taskItem.TaskId,
-      Fieldname : "IsFavourite",
-      IsMyTask : true,
-      Value : newStarredStatus
+      FieldName: "IsFavourite",
+      IsMyTask: true,
+      Value: newStarredStatus
     }))
   };
 
@@ -103,44 +151,37 @@ const MyTask: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Navigation Header */}
       <div className={styles.tabContainer}>
         <div
-          className={`${styles.tab} ${
-            activeTab === "My Task" ? styles.activeTab : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "My Task" ? styles.activeTab : ""
+            }`}
           onClick={() => handleTabChange("My Task")}
         >
           My Task
         </div>
         <div
-          className={`${styles.tab} ${
-            activeTab === "Assigned By Me" ? styles.activeTab : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "Assigned By Me" ? styles.activeTab : ""
+            }`}
           onClick={() => handleTabChange("Assigned By Me")}
         >
           Assigned By Me
         </div>
         <div
-          className={`${styles.tab} ${
-            activeTab === "CC" ? styles.activeTab : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "CC" ? styles.activeTab : ""}`}
           onClick={() => handleTabChange("CC")}
         >
           CC
         </div>
         <div
-          className={`${styles.tab} ${
-            activeTab === "Starred" ? styles.activeTab : ""
-          }`}
+          className={`${styles.tab} ${activeTab === "Starred" ? styles.activeTab : ""
+            }`}
           onClick={() => handleTabChange("Starred")}
         >
           Starred
         </div>
       </div>
 
-      {/* Conditionally render content based on activeTab */}
-      {activeTab === "My Task" && (
+      {(activeTab === "My Task" || activeTab === "Starred") && (
         <>
           {loading ? (
             <Loader />
@@ -155,11 +196,13 @@ const MyTask: React.FC = () => {
                   <span className={styles.accordionIcon}>
                     {isAccordionOpen ? "▼" : "►"}
                   </span>
-                  <span>Pending Tasks({tasks?.length || 0})</span>
+                  <span>
+                    {activeTab === "Starred" ? "Starred Tasks" : "Pending Tasks"}
+                    ({tasks?.length || 0})
+                  </span>
                 </div>
               </div>
 
-              {/* Task List (conditionally rendered) */}
               {isAccordionOpen && (
                 <div className={styles.taskList}>
                   {tasks?.map((taskItem: Task) => (
@@ -174,7 +217,6 @@ const MyTask: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Right side: Star icon, Progress circle and actions */}
                       <div className={styles.taskRight}>
                         <div className={styles.taskProgress}>
                           <span className={styles.progressPercentage}>
@@ -185,7 +227,6 @@ const MyTask: React.FC = () => {
                             value={parseFloat(taskItem.AssignedToUsers?.[0]?.TaskStatus || "0")}
                             size={30}
                             thickness={4}
-                            className={styles.circularProgress}
                           />
                         </div>
                         <IconButton
@@ -213,16 +254,10 @@ const MyTask: React.FC = () => {
           )}
         </>
       )}
+      {activeTab === "Assigned By Me" && <div>Content for Assigned By Me</div>}
+      {activeTab === "CC" && <div>Content for CC</div>}
 
       <div className={styles.pagination}>
-        <select
-          value={itemsPerPage}
-          onChange={(e) => setItemsPerPage(Number(e.target.value))}
-        >
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-          <option value={50}>50</option>
-        </select>
       </div>
     </div>
   );

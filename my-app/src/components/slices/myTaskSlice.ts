@@ -1,3 +1,4 @@
+
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ADDTASK, MYTASK, STARRED_TASK_FIELD } from "../services/apiEndPoints";
 import { privatePost, privatePut } from "../services/privateRequest";
@@ -13,6 +14,7 @@ interface Task {
   AssignedToUsers?: Array<{
     TaskStatus: string;
   }>;
+  IsFavourite?: boolean;
 }
 
 interface TaskState {
@@ -24,12 +26,14 @@ interface TaskState {
   filterApplied: boolean;
 }
 
-interface FetchMyTaskParams {
+export interface FetchMyTaskParams {
   From: number;
   To: number;
-  UserId: string;
+  UserId?: string;
   Title: string;
+  IsFavourite?: boolean;
 }
+
 interface AddTaskParams {
   Title: string;
   Description: string;
@@ -47,7 +51,7 @@ export const fetchMyTask = createAsyncThunk(
     const res = await privatePost(MYTASK, params);
     console.log("task", res);
 
-    return { data: res?.data?.data?.Pending, params };
+    return { data: res?.data?.data?.Pending || [], params };
   }
 );
 
@@ -62,15 +66,21 @@ export const addTask = createAsyncThunk(
 
 export const updateStarStatus = createAsyncThunk(
   "put/updatedStarredStatus",
-  async (params: UpdatedStarStatus, { rejectWithValue }) => {
+  async (params: UpdatedStarStatus, { rejectWithValue, dispatch, getState }) => {
     try {
       const urlWithTaskId = `${STARRED_TASK_FIELD}?taskId=${params.TaskId}`;
-       const payload = {
+      const payload = {
         FieldName: params.FieldName,
         IsMyTask: params.IsMyTask,
         Value: params.Value
       };
       await privatePut(urlWithTaskId, payload);
+      toast.success(params.Value ? "Task added to Starred" : "Task removed from Starred");
+
+      const state: any = getState();
+      const currentParams = state.tasks.lastParams;
+      dispatch(fetchMyTask(currentParams));
+
       return params;
     } catch (error: any) {
       toast.error("Failed to update star status.");
@@ -78,6 +88,7 @@ export const updateStarStatus = createAsyncThunk(
     }
   }
 );
+
 const initialState: TaskState = {
   task: [],
   totalCount: 0,
@@ -87,7 +98,6 @@ const initialState: TaskState = {
   filterApplied: false,
 };
 
-// Task slice
 const taskSlice = createSlice({
   name: "tasks",
   initialState,
@@ -113,13 +123,6 @@ const taskSlice = createSlice({
     builder.addCase(fetchMyTask.rejected, (state) => {
       state.loading = false;
       state.error = true;
-    });
-    builder.addCase(updateStarStatus.fulfilled, (state, action) => {
-      const { TaskId, Value } = action.payload;
-      const taskToUpdate = state.task.find((task) => task.TaskId === TaskId);
-      if (taskToUpdate) {
-        taskToUpdate.Starred = Value;
-      }
     });
     builder.addCase(updateStarStatus.rejected, (state, action) => {
       state.error = true;
