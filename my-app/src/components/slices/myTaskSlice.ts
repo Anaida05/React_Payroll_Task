@@ -49,6 +49,10 @@ export interface UpdateTaskStatusParams {
   Status: 'Pending' | 'Completed';
   IsMyTask: boolean;
 }
+export interface UndoTaskParams {
+  TaskId: number;
+  IsMyTask: boolean;
+}
 export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
   async (params: FetchMyTaskParams) => {
@@ -92,23 +96,23 @@ export const updateStarStatus = createAsyncThunk(
     }
   }
 );
-export interface UndoTaskParams {
-  TaskId: number;
-  IsMyTask: boolean;
-}
+
 
 export const undoTask = createAsyncThunk(
   "task/undoTask",
-  async (params: UndoTaskParams, { rejectWithValue, getState }) => {
+  async (params: UndoTaskParams, { rejectWithValue, getState, dispatch }) => {
     try {
-      const urlWithTaskId = `${UNDO_TASK}?taskId=${params.TaskId}`;
+      const urlWithTaskId = `${UPDATE_TASK_STATUS}?taskId=${params.TaskId}`;
       const payload = {
         FieldName: "TaskStatus",
-        Value: 0,
+        Value: 0, // 0 usually represents Pending status
         IsMyTask: params.IsMyTask,
       };
-      await privatePost(urlWithTaskId, payload);
+      await privatePut(urlWithTaskId, {});
       toast.success("Task moved back to Pending");
+      const state: any = getState();
+      const currentParams = state.tasks.lastParams;
+      dispatch(fetchMyTask(currentParams));
       return { taskId: params.TaskId };
     } catch (err: any) {
       toast.error("Failed to undo task.");

@@ -149,8 +149,11 @@ const MyTask: React.FC = () => {
     };
 
     if (isChecked) {
+      console.log("Dispatching: markTaskCompleted", taskItem.TaskId); // Check if this logs when checking the radio
       dispatch(markTaskCompleted({ taskId: taskItem.TaskId, isMyTask: true }));
+
     } else {
+      console.log("Dispatching: undoTask", taskItem.TaskId);
       dispatch(undoTask({ TaskId: taskItem.TaskId, IsMyTask: true }));
     }
   };
