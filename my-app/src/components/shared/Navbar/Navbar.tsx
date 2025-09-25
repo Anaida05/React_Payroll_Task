@@ -8,7 +8,7 @@ const navigate = useNavigate()
 const location = useLocation()
 const handleLogout=()=>{
     localStorage.removeItem("token")
-    navigate("/")
+    navigate("/login")
 }
   useEffect(() => {
     const updateTime = () => {

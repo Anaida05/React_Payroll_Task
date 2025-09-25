@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams } from "../../slices/myTaskSlice";
+import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask, } from "../../slices/myTaskSlice";
 import {
   Button,
   CircularProgress,
@@ -27,6 +27,7 @@ interface Task {
   AssignedToUsers?: Array<{
     TaskStatus: string;
   }>;
+  CompletionDate?: string;
 }
 
 const MyTask: React.FC = () => {
@@ -34,11 +35,17 @@ const MyTask: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [search, setSearch] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
-  const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(true);
+  const [isPendingAccordionOpen, setIsPendingAccordionOpen] = useState<boolean>(true);
+  const [isCompletedAccordionOpen, setIsCompletedAccordionOpen] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>("My Task");
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
+  const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
 
   const dispatch = useDispatch<any>();
+
+  const getCompletionTimeString = () => {
+    return `Completed On: Today at ${dayjs().format('h:mm a')}`;
+  };
 
   const getTaskParams = (): FetchMyTaskParams => {
     const params: FetchMyTaskParams = {
@@ -47,11 +54,10 @@ const MyTask: React.FC = () => {
       Title: debouncedSearch,
     };
 
-    // Explicitly filter tasks based on the active tab
     if (activeTab === "Starred") {
-      params.IsFavourite = true; // Fetch only starred tasks
+      params.IsFavourite = true;
     } else if (activeTab === "My Task") {
-      params.IsFavourite = false; // Fetch only non-starred tasks
+      params.IsFavourite = false;
     }
 
     return params;
@@ -67,7 +73,12 @@ const MyTask: React.FC = () => {
         ...taskItem,
         Starred: taskItem.IsFavourite,
       }));
-      setTasks(tasksWithStars);
+
+      const pending = tasksWithStars.filter((t: Task) => t.TaskStatus !== "Completed");
+      const completed = tasksWithStars.filter((t: Task) => t.TaskStatus === "Completed");
+
+      setPendingTasks(pending);
+      setCompletedTasks(completed);
     }
   }, [task]);
 
@@ -95,34 +106,23 @@ const MyTask: React.FC = () => {
   const toggleStar = (taskItem: Task) => {
     const newStarredStatus = !taskItem.Starred;
 
-    // 1. Optimistic Update/Removal of the task from the local list
-    setTasks(prevTasks => {
-
-      // Scenario 1: Starring a task while on the "My Task" tab
-      // Condition: On My Task tab AND Starred status is becoming TRUE
+    const updateTasks = (prevTasks: Task[]) => {
       if (activeTab === "My Task" && newStarredStatus) {
-        // REMOVE the task from the 'My Task' list immediately.
         return prevTasks.filter(t => t.TaskId !== taskItem.TaskId);
-      }
-
-      // Scenario 2: Unstarring a task while on the "Starred" tab
-      // Condition: On Starred tab AND Starred status is becoming FALSE
-      else if (activeTab === "Starred" && !newStarredStatus) {
-        // REMOVE the task from the 'Starred' list immediately.
+      } else if (activeTab === "Starred" && !newStarredStatus) {
         return prevTasks.filter(t => t.TaskId !== taskItem.TaskId);
-      }
-
-      // Scenario 3: Default (only update local status/star icon)
-      else {
+      } else {
         return prevTasks.map(t =>
           t.TaskId === taskItem.TaskId
             ? { ...t, Starred: newStarredStatus, IsFavourite: newStarredStatus }
             : t
         );
       }
-    });
+    };
 
-    // 2. Dispatch the async update (This triggers the Redux state update and re-fetch)
+    setPendingTasks(updateTasks);
+    setCompletedTasks(updateTasks);
+
     dispatch(updateStarStatus({
       TaskId: taskItem.TaskId,
       FieldName: "IsFavourite",
@@ -130,6 +130,83 @@ const MyTask: React.FC = () => {
       Value: newStarredStatus
     }))
   };
+
+  const handleCompleteTask = (taskItem: Task, isChecked: boolean) => {
+    const newStatus = isChecked ? "Completed" : "Pending";
+    const completionDate = isChecked ? getCompletionTimeString() : undefined;
+    if (isChecked) {
+      setPendingTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
+      setCompletedTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: completionDate }, ...prev]);
+    } else {
+      setCompletedTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
+      setPendingTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: undefined }, ...prev]);
+    }
+    const params = {
+      taskId: taskItem.TaskId, // parameter name for markTaskCompleted
+      TaskId: taskItem.TaskId, // parameter name for undoTask
+      isMyTask: true,
+      IsMyTask: true,
+    };
+
+    if (isChecked) {
+      dispatch(markTaskCompleted({ taskId: taskItem.TaskId, isMyTask: true }));
+    } else {
+      dispatch(undoTask({ TaskId: taskItem.TaskId, IsMyTask: true }));
+    }
+  };
+  const renderTaskItem = (taskItem: Task, isCompletedList: boolean) => (
+    <div key={taskItem.TaskId} className={styles.taskItem}>
+      <Radio
+        checked={isCompletedList}
+        onChange={(e) => handleCompleteTask(taskItem, e.target.checked)}
+        className={styles.checkbox}
+      />
+
+      {/* Left side: Title and time */}
+      <div className={styles.taskLeft}>
+        <div className={styles.taskTitle}>{taskItem.Title}</div>
+        <div className={styles.taskTime}>
+          {isCompletedList
+            ? taskItem.CompletionDate || `Completed on: ${dayjs(taskItem.CreateDate).format('MMM DD, YYYY')}`
+            : dayjs(taskItem.CreateDate).fromNow()
+          }
+        </div>
+      </div>
+
+      {/* Right side: Progress, Star, Actions */}
+      <div className={styles.taskRight}>
+        {!isCompletedList && (
+          <div className={styles.taskProgress}>
+            <span className={styles.progressPercentage}>
+              {taskItem.AssignedToUsers?.[0]?.TaskStatus}%
+            </span>
+            <CircularProgress
+              variant="determinate"
+              value={parseFloat(taskItem.AssignedToUsers?.[0]?.TaskStatus || "0")}
+              size={30}
+              thickness={4}
+            />
+          </div>
+        )}
+        <IconButton
+          onClick={() => toggleStar(taskItem)}
+          className={styles.starButton}
+          size="small"
+        >
+          {taskItem.Starred ? (
+            <Star className={styles.starIconFilled} />
+          ) : (
+            <StarBorder className={styles.starIcon} />
+          )}
+        </IconButton>
+        <div className={styles.taskActions}>
+          <Tooltip title="Options">
+            <Button className={styles.threeDots}>⋮</Button>
+          </Tooltip>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className={styles.taskContainer}>
@@ -187,68 +264,51 @@ const MyTask: React.FC = () => {
             <Loader />
           ) : (
             <>
-              {/* Accordion Header */}
               <div
                 className={styles.accordionHeader}
-                onClick={() => setIsAccordionOpen(!isAccordionOpen)}
+                onClick={() => setIsPendingAccordionOpen(!isPendingAccordionOpen)}
               >
                 <div className={styles.accordionTitle}>
                   <span className={styles.accordionIcon}>
-                    {isAccordionOpen ? "▼" : "►"}
+                    {isPendingAccordionOpen ? "▼" : "►"}
                   </span>
                   <span>
                     {activeTab === "Starred" ? "Starred Tasks" : "Pending Tasks"}
-                    ({tasks?.length || 0})
+                    ({pendingTasks?.length || 0})
                   </span>
                 </div>
               </div>
 
-              {isAccordionOpen && (
+              {isPendingAccordionOpen && (
                 <div className={styles.taskList}>
-                  {tasks?.map((taskItem: Task) => (
-                    <div key={taskItem.TaskId} className={styles.taskItem}>
-                      <Radio className={styles.checkbox} />
-
-                      {/* Left side: Title and time */}
-                      <div className={styles.taskLeft}>
-                        <div className={styles.taskTitle}>{taskItem.Title}</div>
-                        <div className={styles.taskTime}>
-                          {dayjs(taskItem.CreateDate).fromNow()}
-                        </div>
-                      </div>
-
-                      <div className={styles.taskRight}>
-                        <div className={styles.taskProgress}>
-                          <span className={styles.progressPercentage}>
-                            {taskItem.AssignedToUsers?.[0]?.TaskStatus}%
-                          </span>
-                          <CircularProgress
-                            variant="determinate"
-                            value={parseFloat(taskItem.AssignedToUsers?.[0]?.TaskStatus || "0")}
-                            size={30}
-                            thickness={4}
-                          />
-                        </div>
-                        <IconButton
-                          onClick={() => toggleStar(taskItem)}
-                          className={styles.starButton}
-                          size="small"
-                        >
-                          {taskItem.Starred ? (
-                            <Star className={styles.starIconFilled} />
-                          ) : (
-                            <StarBorder className={styles.starIcon} />
-                          )}
-                        </IconButton>
-                        <div className={styles.taskActions}>
-                          <Tooltip title="Options">
-                            <Button className={styles.threeDots}>⋮</Button>
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {pendingTasks?.map((taskItem: Task) => renderTaskItem(taskItem, false))}
                 </div>
+              )}
+
+              <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #eee' }} />
+
+              {activeTab === "My Task" && (
+                <>
+                  <div
+                    className={styles.accordionHeader}
+                    onClick={() => setIsCompletedAccordionOpen(!isCompletedAccordionOpen)}
+                  >
+                    <div className={styles.accordionTitle}>
+                      <span className={styles.accordionIcon}>
+                        {isCompletedAccordionOpen ? "▼" : "►"}
+                      </span>
+                      <span>
+                        Completed Tasks ({completedTasks?.length || 0})
+                      </span>
+                    </div>
+                  </div>
+
+                  {isCompletedAccordionOpen && (
+                    <div className={`${styles.taskList} ${styles.completedTaskList}`}>
+                      {completedTasks?.map((taskItem: Task) => renderTaskItem(taskItem, true))}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

@@ -1,6 +1,6 @@
 
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ADDTASK, MYTASK, STARRED_TASK_FIELD } from "../services/apiEndPoints";
+import { ADDTASK, MYTASK, STARRED_TASK_FIELD, UNDO_TASK, UPDATE_TASK_STATUS } from "../services/apiEndPoints";
 import { privatePost, privatePut } from "../services/privateRequest";
 import toast from "react-hot-toast";
 
@@ -44,7 +44,11 @@ interface UpdatedStarStatus {
   FieldName: string;
   IsMyTask: boolean;
 }
-
+export interface UpdateTaskStatusParams {
+  TaskId: number;
+  Status: 'Pending' | 'Completed';
+  IsMyTask: boolean;
+}
 export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
   async (params: FetchMyTaskParams) => {
@@ -88,6 +92,53 @@ export const updateStarStatus = createAsyncThunk(
     }
   }
 );
+export interface UndoTaskParams {
+  TaskId: number;
+  IsMyTask: boolean;
+}
+
+export const undoTask = createAsyncThunk(
+  "task/undoTask",
+  async (params: UndoTaskParams, { rejectWithValue, getState }) => {
+    try {
+      const urlWithTaskId = `${UNDO_TASK}?taskId=${params.TaskId}`;
+      const payload = {
+        FieldName: "TaskStatus",
+        Value: 0,
+        IsMyTask: params.IsMyTask,
+      };
+      await privatePost(urlWithTaskId, payload);
+      toast.success("Task moved back to Pending");
+      return { taskId: params.TaskId };
+    } catch (err: any) {
+      toast.error("Failed to undo task.");
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+export const markTaskCompleted = createAsyncThunk(
+  "task/markTaskCompleted",
+  async ({ taskId, isMyTask }: { taskId: number; isMyTask: boolean }, { dispatch, rejectWithValue, getState }) => {
+    try {
+      const urlWithTaskId = `${UPDATE_TASK_STATUS}?taskId=${taskId}`;
+      const payload = {
+        FieldName: "TaskStatus",
+        Value: 100,
+        IsMyTask: isMyTask
+      };
+
+      await privatePost(urlWithTaskId, payload);
+      toast.success("Task moved to Completed");
+      const state: any = getState();
+      const currentParams = state.tasks.lastParams;
+      return { taskId };
+    } catch (err: any) {
+      toast.error("Failed to mark task completed.");
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 
 const initialState: TaskState = {
   task: [],
@@ -125,6 +176,12 @@ const taskSlice = createSlice({
       state.error = true;
     });
     builder.addCase(updateStarStatus.rejected, (state, action) => {
+      state.error = true;
+    });
+    builder.addCase(markTaskCompleted.rejected, (state, action) => {
+      state.error = true;
+    });
+    builder.addCase(undoTask.rejected, (state, action) => {
       state.error = true;
     });
   },
