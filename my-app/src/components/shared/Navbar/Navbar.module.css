@@ -18,12 +18,6 @@
   gap: 1.5rem;
 }
 
-.rightSectionStyle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .buttonStyle {
   background-color: #5d78ff;
   color: #fff;

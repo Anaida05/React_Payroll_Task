@@ -3,7 +3,6 @@ import styles from "./Navbar.module.css";
 import { useLocation, useNavigate } from "react-router-dom";
 const Navbar: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<string>("");
-  const [userName] = useState<string>("Rijo Admin New"); 
 const navigate = useNavigate()
 const location = useLocation()
 const handleLogout=()=>{
@@ -57,9 +56,6 @@ const handleLogout=()=>{
         <span>{currentTime}</span>
         <button className={styles.buttonStyle}>Punch Out</button>
         <button className={styles.buttonStyle} onClick={handleLogout}>Logout</button>
-      </div>
-      <div className={styles.rightSectionStyle}>
-        <span>{userName}</span>
       </div>
     </div>
   );

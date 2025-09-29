@@ -40,6 +40,7 @@ const MyTask: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("My Task");
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState<Set<number>>(new Set());
 
   const dispatch = useDispatch<any>();
 
@@ -131,39 +132,61 @@ const MyTask: React.FC = () => {
     }))
   };
 
-  const handleCompleteTask = (taskItem: Task, isChecked: boolean) => {
-    const newStatus = isChecked ? "Completed" : "Pending";
-    const completionDate = isChecked ? getCompletionTimeString() : undefined;
-    if (isChecked) {
-      setPendingTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
-      setCompletedTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: completionDate }, ...prev]);
-    } else {
-      setCompletedTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
-      setPendingTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: undefined }, ...prev]);
-    }
-    const params = {
-      taskId: taskItem.TaskId, // parameter name for markTaskCompleted
-      TaskId: taskItem.TaskId, // parameter name for undoTask
-      isMyTask: true,
-      IsMyTask: true,
-    };
-
-    if (isChecked) {
-      console.log("Dispatching: markTaskCompleted", taskItem.TaskId); // Check if this logs when checking the radio
-      dispatch(markTaskCompleted({ taskId: taskItem.TaskId, isMyTask: true }));
-
-    } else {
-      console.log("Dispatching: undoTask", taskItem.TaskId);
-      dispatch(undoTask({ TaskId: taskItem.TaskId, IsMyTask: true }));
+  const handleCompleteTask = async (taskItem: Task, isChecked: boolean) => {
+    console.log("handleCompleteTask called:", { taskItem: taskItem.TaskId, title: taskItem.Title, isChecked });
+    
+    // Add task to loading state
+    setLoadingTasks(prev => new Set(prev).add(taskItem.TaskId));
+    
+    try {
+      if (isChecked) {
+        console.log("Dispatching: markTaskCompleted", taskItem.TaskId);
+        await dispatch(markTaskCompleted({ taskId: taskItem.TaskId, isMyTask: true }));
+        
+        // Only update UI after API call succeeds
+        console.log("Moving task to completed:", taskItem.TaskId);
+        const newStatus = "Completed";
+        const completionDate = getCompletionTimeString();
+        setPendingTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
+        setCompletedTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: completionDate }, ...prev]);
+        
+      } else {
+        console.log("Dispatching: undoTask", taskItem.TaskId);
+        await dispatch(undoTask({ TaskId: taskItem.TaskId, IsMyTask: true }));
+        
+        // Only update UI after API call succeeds
+        console.log("Moving task to pending:", taskItem.TaskId);
+        const newStatus = "Pending";
+        setCompletedTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
+        setPendingTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: undefined }, ...prev]);
+      }
+    } catch (error) {
+      console.error("Error in handleCompleteTask:", error);
+      toast.error("Failed to update task status");
+    } finally {
+      // Remove task from loading state
+      setLoadingTasks(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(taskItem.TaskId);
+        return newSet;
+      });
     }
   };
-  const renderTaskItem = (taskItem: Task, isCompletedList: boolean) => (
-    <div key={taskItem.TaskId} className={styles.taskItem}>
-      <Radio
-        checked={isCompletedList}
-        onChange={(e) => handleCompleteTask(taskItem, e.target.checked)}
-        className={styles.checkbox}
-      />
+  const renderTaskItem = (taskItem: Task, isCompletedList: boolean) => {
+    const isLoading = loadingTasks.has(taskItem.TaskId);
+    
+    return (
+      <div key={taskItem.TaskId} className={styles.taskItem}>
+        {isLoading ? (
+          <CircularProgress size={20} className={styles.checkbox} />
+        ) : (
+          <Radio
+            checked={isCompletedList}
+            onChange={(e) => handleCompleteTask(taskItem, e.target.checked)}
+            className={styles.checkbox}
+            disabled={isLoading}
+          />
+        )}
 
       {/* Left side: Title and time */}
       <div className={styles.taskLeft}>
@@ -209,7 +232,8 @@ const MyTask: React.FC = () => {
         </div>
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className={styles.taskContainer}>

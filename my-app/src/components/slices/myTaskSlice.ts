@@ -102,19 +102,26 @@ export const undoTask = createAsyncThunk(
   "task/undoTask",
   async (params: UndoTaskParams, { rejectWithValue, getState, dispatch }) => {
     try {
-      const urlWithTaskId = `${UPDATE_TASK_STATUS}?taskId=${params.TaskId}`;
+      const urlWithTaskId = `${UNDO_TASK}?taskId=${params.TaskId}`;
       const payload = {
-        FieldName: "TaskStatus",
-        Value: 0, // 0 usually represents Pending status
         IsMyTask: params.IsMyTask,
       };
-      await privatePut(urlWithTaskId, {});
+      
+      console.log("Undo Task - URL:", urlWithTaskId);
+      console.log("Undo Task - Payload:", payload);
+      console.log("Undo Task - Params:", params);
+      
+      const response = await privatePost(urlWithTaskId, payload);
+      console.log("Undo Task - Response:", response);
+      
       toast.success("Task moved back to Pending");
       const state: any = getState();
       const currentParams = state.tasks.lastParams;
+      console.log("Undo Task - Refreshing with params:", currentParams);
       dispatch(fetchMyTask(currentParams));
       return { taskId: params.TaskId };
     } catch (err: any) {
+      console.error("Undo Task - Error:", err);
       toast.error("Failed to undo task.");
       return rejectWithValue(err.response?.data || err.message);
     }
@@ -131,10 +138,23 @@ export const markTaskCompleted = createAsyncThunk(
         IsMyTask: isMyTask
       };
 
-      await privatePost(urlWithTaskId, payload);
+      console.log("Mark Task Completed - URL:", urlWithTaskId);
+      console.log("Mark Task Completed - Payload:", payload);
+      
+      const response = await privatePost(urlWithTaskId, payload);
+      console.log("Mark Task Completed - Full Response:", response);
+      console.log("Mark Task Completed - Response Data:", response.data);
+      
+      // Check if the API response indicates success or failure
+      if (response.data.Status === 404 && response.data.Message === 'No Records') {
+        console.warn("API returned No Records - task might not exist or already completed");
+        // Don't treat this as an error, just log it
+      }
+      
       toast.success("Task moved to Completed");
       const state: any = getState();
       const currentParams = state.tasks.lastParams;
+      dispatch(fetchMyTask(currentParams));
       return { taskId };
     } catch (err: any) {
       toast.error("Failed to mark task completed.");
