@@ -8,7 +8,7 @@ import {
   IconButton,
   Radio,
 } from "@mui/material";
-import { Star, StarBorder } from "@mui/icons-material";
+import { Star, StarBorder, CheckCircle } from "@mui/icons-material";
 import styles from "./Mytask.module.css";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -21,7 +21,7 @@ interface Task {
   Title: string;
   AssignedByUserName: string;
   CreateDate: string;
-  TaskStatus: string;
+  TaskStatus: number;
   Starred?: boolean;
   IsFavourite: boolean;
   AssignedToUsers?: Array<{
@@ -69,14 +69,21 @@ const MyTask: React.FC = () => {
   );
 
   useEffect(() => {
+    console.log("🔍 Raw tasks from Redux:", task);
+    console.log("🔍 Pending tasks:", pendingTasks);
+    console.log("🔍 Completed tasks:", completedTasks);
+    
     if (task) {
       const tasksWithStars = task.map((taskItem: Task) => ({
         ...taskItem,
         Starred: taskItem.IsFavourite,
       }));
 
-      const pending = tasksWithStars.filter((t: Task) => t.TaskStatus !== "Completed");
-      const completed = tasksWithStars.filter((t: Task) => t.TaskStatus === "Completed");
+      const pending = tasksWithStars.filter((t: Task) => t.TaskStatus !== 100);
+      const completed = tasksWithStars.filter((t: Task) => t.TaskStatus === 100);
+
+      console.log("🔍 Filtered pending tasks:", pending);
+      console.log("🔍 Filtered completed tasks:", completed);
 
       setPendingTasks(pending);
       setCompletedTasks(completed);
@@ -133,7 +140,8 @@ const MyTask: React.FC = () => {
   };
 
   const handleCompleteTask = async (taskItem: Task, isChecked: boolean) => {
-    console.log("handleCompleteTask called:", { taskItem: taskItem.TaskId, title: taskItem.Title, isChecked });
+    console.log("🚀 handleCompleteTask called:", { taskItem: taskItem.TaskId, title: taskItem.Title, isChecked });
+    console.log("🚀 Current task status:", taskItem.TaskStatus);
     
     // Add task to loading state
     setLoadingTasks(prev => new Set(prev).add(taskItem.TaskId));
@@ -145,7 +153,7 @@ const MyTask: React.FC = () => {
         
         // Only update UI after API call succeeds
         console.log("Moving task to completed:", taskItem.TaskId);
-        const newStatus = "Completed";
+        const newStatus = 100;
         const completionDate = getCompletionTimeString();
         setPendingTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
         setCompletedTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: completionDate }, ...prev]);
@@ -156,7 +164,7 @@ const MyTask: React.FC = () => {
         
         // Only update UI after API call succeeds
         console.log("Moving task to pending:", taskItem.TaskId);
-        const newStatus = "Pending";
+        const newStatus = 0;
         setCompletedTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));
         setPendingTasks(prev => [{ ...taskItem, TaskStatus: newStatus, CompletionDate: undefined }, ...prev]);
       }
@@ -174,15 +182,34 @@ const MyTask: React.FC = () => {
   };
   const renderTaskItem = (taskItem: Task, isCompletedList: boolean) => {
     const isLoading = loadingTasks.has(taskItem.TaskId);
+    console.log("📋 Rendering task:", { taskId: taskItem.TaskId, title: taskItem.Title, status: taskItem.TaskStatus, isCompletedList, isLoading });
     
     return (
       <div key={taskItem.TaskId} className={styles.taskItem}>
         {isLoading ? (
           <CircularProgress size={20} className={styles.checkbox} />
+        ) : isCompletedList ? (
+          // Completed task - show checkmark icon that can be clicked to undo
+          <Tooltip title="Click to undo task">
+            <IconButton
+              onClick={() => {
+                console.log("🎯 Checkmark clicked to undo task:", taskItem.TaskId);
+                handleCompleteTask(taskItem, false);
+              }}
+              size="small"
+              style={{ padding: '4px' }}
+            >
+              <CheckCircle style={{ color: '#1976d2', fontSize: '20px' }} />
+            </IconButton>
+          </Tooltip>
         ) : (
+          // Pending task - show radio button
           <Radio
-            checked={isCompletedList}
-            onChange={(e) => handleCompleteTask(taskItem, e.target.checked)}
+            checked={false}
+            onChange={(e) => {
+              console.log("🎯 Radio button clicked:", { taskId: taskItem.TaskId, title: taskItem.Title, checked: e.target.checked });
+              handleCompleteTask(taskItem, e.target.checked);
+            }}
             className={styles.checkbox}
             disabled={isLoading}
           />
@@ -332,6 +359,7 @@ const MyTask: React.FC = () => {
 
                   {isCompletedAccordionOpen && (
                     <div className={`${styles.taskList} ${styles.completedTaskList}`}>
+                      {console.log("🎯 Rendering completed tasks:", completedTasks)}
                       {completedTasks?.map((taskItem: Task) => renderTaskItem(taskItem, true))}
                     </div>
                   )}
