@@ -13,6 +13,7 @@ import styles from "./Mytask.module.css";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Loader from "../../shared/Loader/Loader";
+import NewTaskModal from "./NewTaskModal";
 
 dayjs.extend(relativeTime);
 
@@ -41,11 +42,27 @@ const MyTask: React.FC = () => {
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [loadingTasks, setLoadingTasks] = useState<Set<number>>(new Set());
+  const [newTaskModalOpen, setNewTaskModalOpen] = useState<boolean>(false);
 
   const dispatch = useDispatch<any>();
 
   const getCompletionTimeString = () => {
     return `Completed On: Today at ${dayjs().format('h:mm a')}`;
+  };
+
+  const handleNewTaskModalOpen = () => {
+    setNewTaskModalOpen(true);
+  };
+
+  const handleNewTaskModalClose = () => {
+    setNewTaskModalOpen(false);
+  };
+
+  const handleNewTaskSave = (taskData: any) => {
+    console.log("New task data:", taskData);
+    // Here you can integrate with your existing addTask functionality
+    // For now, just close the modal
+    setNewTaskModalOpen(false);
   };
 
   const getTaskParams = (): FetchMyTaskParams => {
@@ -276,7 +293,11 @@ const MyTask: React.FC = () => {
             className={styles.searchBtn}
             placeholder="Search"
           />
-          <Button className={styles.addButton} variant="contained">
+          <Button 
+            className={styles.addButton} 
+            variant="contained"
+            onClick={handleNewTaskModalOpen}
+          >
             Add Task
           </Button>
         </div>
@@ -374,6 +395,13 @@ const MyTask: React.FC = () => {
 
       <div className={styles.pagination}>
       </div>
+
+      {/* New Task Modal */}
+      <NewTaskModal
+        open={newTaskModalOpen}
+        onClose={handleNewTaskModalClose}
+        onSave={handleNewTaskSave}
+      />
     </div>
   );
 };
