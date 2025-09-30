@@ -33,6 +33,7 @@ export const routing = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
+      { index: true, element: <Dashboard /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "mytask", element: <MyTask /> },
       { path: "myteam", element: <MyTeam /> },

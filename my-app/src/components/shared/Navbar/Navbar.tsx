@@ -30,6 +30,7 @@ const handleLogout=()=>{
 
   const getPageTitle = () => {
     switch (location.pathname) {
+      case "/":
       case "/dashboard":
         return "Dashboard";
       case "/attendance":
@@ -38,12 +39,12 @@ const handleLogout=()=>{
         return "My Task";
       case "/myteam":
         return "My Team";
-      case "/deal":
-        return "Deal";
+      case "/deals":
+        return "Deal & Pipeline";
       case "/mycustomers":
-        return "Customers";
+        return "My Customers";
       default:
-        return "My Task"; 
+        return "Dashboard"; 
     }
   };
 
