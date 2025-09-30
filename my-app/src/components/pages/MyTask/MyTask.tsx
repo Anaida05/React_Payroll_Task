@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask, } from "../../slices/myTaskSlice";
+import { AppDispatch } from "../../../store/store";
 import toast from "react-hot-toast";
 import {
   Button,
@@ -19,11 +20,37 @@ import FilterTask from "./FilterTask";
 
 dayjs.extend(relativeTime);
 
+// Utility function to determine task status for styling
+const getTaskStatusForStyling = (taskItem: Task): 'completed' | 'overdue' | 'pending' => {
+  const status = taskItem.TaskStatus;
+  
+  // Check if task is completed
+  if (typeof status === 'number' && status === 100) {
+    return 'completed';
+  } else if (typeof status === 'string' && (status.toLowerCase() === 'completed' || status === '100')) {
+    return 'completed';
+  }
+  
+  // Check if task is overdue (pending and past due date)
+  if (taskItem.TaskEndDate) {
+    const dueDate = dayjs(taskItem.TaskEndDate);
+    const now = dayjs();
+    
+    if (dueDate.isBefore(now, 'day')) {
+      return 'overdue';
+    }
+  }
+  
+  // Default to pending
+  return 'pending';
+};
+
 interface Task {
   TaskId: number;
   Title: string;
   AssignedByUserName?: string;
   CreateDate?: string;
+  TaskEndDate?: string;
   TaskStatus: number | string;
   Starred?: boolean;
   IsFavourite?: boolean;
@@ -49,7 +76,7 @@ const MyTask: React.FC = () => {
   const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
   const [appliedFilters, setAppliedFilters] = useState<any>({});
 
-  const dispatch = useDispatch<any>();
+  const dispatch = useDispatch<AppDispatch>();
 
   const getCompletionTimeString = () => {
     return `Completed On: Today at ${dayjs().format('h:mm a')}`;
@@ -111,13 +138,13 @@ const MyTask: React.FC = () => {
     // Update the API call with remaining filters
     const params = getTaskParams();
     const updatedParams = { ...params, ...newFilters };
-    dispatch(fetchMyTask(updatedParams) as any);
+    dispatch(fetchMyTask(updatedParams));
   };
 
   const handleClearAllFilters = () => {
     setAppliedFilters({});
     const params = getTaskParams();
-    dispatch(fetchMyTask(params) as any);
+    dispatch(fetchMyTask(params));
   };
 
   const renderFilterChips = () => {
@@ -248,7 +275,7 @@ const MyTask: React.FC = () => {
   useEffect(() => {
     if (activeTab === "My Task" || activeTab === "Starred") {
       const params = getTaskParams();
-      dispatch(fetchMyTask(params) as any);
+      dispatch(fetchMyTask(params));
     }
   }, [dispatch, itemsPerPage, currentPage, debouncedSearch, activeTab]);
 
@@ -373,7 +400,7 @@ const MyTask: React.FC = () => {
       {/* Left side: Title and time */}
       <div className={styles.taskLeft}>
         <div className={styles.taskTitle}>{taskItem.Title}</div>
-        <div className={styles.taskTime}>
+        <div className={`${styles.taskTime} ${styles[getTaskStatusForStyling(taskItem) as keyof typeof styles]}`}>
           {isCompletedList
             ? taskItem.CompletionDate || `Completed on: ${dayjs(taskItem.CreateDate).format('MMM DD, YYYY')}`
             : dayjs(taskItem.CreateDate).fromNow()
@@ -390,7 +417,7 @@ const MyTask: React.FC = () => {
             </span>
             <CircularProgress
               variant="determinate"
-              value={parseFloat(taskItem.AssignedToUsers?.[0]?.TaskStatus || "0")}
+              value={parseFloat(String(taskItem.AssignedToUsers?.[0]?.TaskStatus || "0"))}
               size={30}
               thickness={4}
             />

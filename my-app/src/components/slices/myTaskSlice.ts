@@ -63,7 +63,7 @@ export interface UndoTaskParams {
 }
 export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
-  async (params) => {
+  async (params: FetchMyTaskParams) => {
     const res = await privatePost(TASK, params);
     console.log("API Response:", res.data);
     return {data: res.data, params};
