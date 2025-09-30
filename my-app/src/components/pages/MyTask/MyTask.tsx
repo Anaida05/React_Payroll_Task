@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask, } from "../../slices/myTaskSlice";
+import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask } from "../../slices/myTaskSlice";
 import { AppDispatch } from "../../../store/store";
 import toast from "react-hot-toast";
 import {
@@ -224,12 +224,33 @@ const MyTask: React.FC = () => {
     (state: any) => state.myTask
   );
 
+  // Load completed tasks from localStorage on component mount
+  useEffect(() => {
+    const savedCompletedTasks = localStorage.getItem('completedTasks');
+    if (savedCompletedTasks) {
+      try {
+        const parsed = JSON.parse(savedCompletedTasks);
+        setCompletedTasks(parsed);
+        console.log("📦 Loaded completed tasks from localStorage:", parsed.length);
+      } catch (error) {
+        console.error("Failed to parse completed tasks from localStorage:", error);
+      }
+    }
+  }, []);
+
+  // Save completed tasks to localStorage whenever they change
+  useEffect(() => {
+    if (completedTasks.length > 0) {
+      localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+      console.log("💾 Saved completed tasks to localStorage:", completedTasks.length);
+    }
+  }, [completedTasks]);
+
   useEffect(() => {
     console.log("🔍 Raw tasks from Redux:", task);
     console.log("🔍 Task type:", typeof task);
     console.log("🔍 Task length:", task?.length);
-    console.log("🔍 Pending tasks:", pendingTasks);
-    console.log("🔍 Completed tasks:", completedTasks);
+    console.log("🔍 Current completed tasks:", completedTasks.length);
     
     if (task && Array.isArray(task)) {
       console.log("🔍 Processing tasks array...");
@@ -238,37 +259,12 @@ const MyTask: React.FC = () => {
         Starred: taskItem.IsFavourite,
       }));
 
-      // Handle different TaskStatus formats (number, string, or percentage)
-      const pending = tasksWithStars.filter((t: Task) => {
-        const status = t.TaskStatus;
-        if (typeof status === 'number') {
-          return status !== 100;
-        } else if (typeof status === 'string') {
-          return status.toLowerCase() !== 'completed' && status !== '100';
-        }
-        return true; // Default to pending if status is unclear
-      });
-
-      const completed = tasksWithStars.filter((t: Task) => {
-        const status = t.TaskStatus;
-        if (typeof status === 'number') {
-          return status === 100;
-        } else if (typeof status === 'string') {
-          return status.toLowerCase() === 'completed' || status === '100';
-        }
-        return false; // Default to not completed if status is unclear
-      });
-
-      console.log("🔍 Filtered pending tasks:", pending);
-      console.log("🔍 Filtered completed tasks:", completed);
-      console.log("🔍 Sample task statuses:", tasksWithStars.map(t => ({ id: t.TaskId, status: t.TaskStatus, type: typeof t.TaskStatus })));
-
-      setPendingTasks(pending);
-      setCompletedTasks(completed);
+      // All tasks from API are pending (since API doesn't return completed tasks)
+      setPendingTasks(tasksWithStars);
+      console.log("🔍 Set pending tasks:", tasksWithStars.length);
     } else {
       console.log("🔍 No tasks or tasks is not an array");
       setPendingTasks([]);
-      setCompletedTasks([]);
     }
   }, [task]);
 
@@ -333,7 +329,7 @@ const MyTask: React.FC = () => {
         console.log("Dispatching: markTaskCompleted", taskItem.TaskId);
         await dispatch(markTaskCompleted({ taskId: taskItem.TaskId, isMyTask: true }));
         
-        // Only update UI after API call succeeds
+        // Update UI after API call succeeds
         console.log("Moving task to completed:", taskItem.TaskId);
         const newStatus = 100;
         const completionDate = getCompletionTimeString();
@@ -344,7 +340,7 @@ const MyTask: React.FC = () => {
         console.log("Dispatching: undoTask", taskItem.TaskId);
         await dispatch(undoTask({ TaskId: taskItem.TaskId, IsMyTask: true }));
         
-        // Only update UI after API call succeeds
+        // Update UI after API call succeeds
         console.log("Moving task to pending:", taskItem.TaskId);
         const newStatus = 0;
         setCompletedTasks(prev => prev.filter(t => t.TaskId !== taskItem.TaskId));

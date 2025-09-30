@@ -116,9 +116,8 @@ export const undoTask = createAsyncThunk(
       console.log("Undo Task - Response:", response);
       
       toast.success("Task moved back to Pending");
-      const state: any = getState();
-      const currentParams = state.tasks.lastParams;
-      dispatch(fetchMyTask(currentParams));
+      
+      // Don't refetch tasks - let the component handle the UI update
       return { taskId: params.TaskId };
     } catch (err: any) {
       console.error("Undo Task - Error:", err);
@@ -142,9 +141,8 @@ export const markTaskCompleted = createAsyncThunk(
       console.log("Mark Task Completed - Response:", response);
       
       toast.success("Task moved to Completed");
-      const state: any = getState();
-      const currentParams = state.tasks.lastParams;
-      dispatch(fetchMyTask(currentParams));
+      
+      // Don't refetch tasks - let the component handle the UI update
       return { taskId };
     } catch (err: any) {
       toast.error("Failed to mark task completed.");
