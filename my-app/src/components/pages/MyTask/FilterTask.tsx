@@ -22,6 +22,7 @@ interface Member {
 interface FilterTaskProps {
   closeModal: () => void;
   teamMembers: Member[];
+  onFiltersApplied?: (filters: any) => void;
 }
 
 interface FormValues {
@@ -32,8 +33,28 @@ interface FormValues {
   DueDate: string | null;
 }
 
-const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
+const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers, onFiltersApplied }) => {
   const dispatch = useDispatch();
+
+  // Filter options configuration
+  const filterOptions = {
+    taskType: [
+      { value: "Recurring", label: "Recurring" },
+      { value: "Non Recurring", label: "Non Recurring" },
+      { value: "Target", label: "Target" },
+    ],
+    dateType: [
+      { value: "CreatedDate", label: "Created Date" },
+      { value: "ModifiedDate", label: "Modified Date" },
+    ],
+    dueDate: [
+      { value: "Today", label: "Today" },
+      { value: "Tomorrow", label: "Tomorrow" },
+      { value: "This Week", label: "This Week" },
+      { value: "Overdue", label: "Overdue" },
+      { value: "No Due Date", label: "No Due Date" },
+    ],
+  };
 
   // Form initial values
   const initialValues: FormValues = {
@@ -66,14 +87,25 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
       DueDate: values.DueDate || "",
     };
 
+    console.log("🔍 FilterTask - Form values:", values);
+    console.log("🔍 FilterTask - New params:", newParams);
+
     const updatedParams = {
       ...lastParams,
       ...newParams,
     };
 
+    console.log("🔍 FilterTask - Updated params:", updatedParams);
+
     // Dispatch actions to fetch tasks with updated filters
     dispatch(fetchMyTask(updatedParams) as any);
     dispatch(setFilterApplied(true));
+    
+    // Pass applied filters to parent component
+    if (onFiltersApplied) {
+      onFiltersApplied(newParams);
+    }
+    
     closeModal();
   };
 
@@ -107,10 +139,7 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
                     control="select"
                     label="Task Type"
                     name="TaskType"
-                    options={[
-                      { value: "Recurring", label: "Recurring" },
-                      { value: "Non Recurring", label: "Non Recurring" },
-                    ]}
+                    options={filterOptions.taskType}
                     isMulti={false}
                   />
                 </div>
@@ -122,10 +151,7 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
                       control="select"
                       label="Date Type"
                       name="DateType"
-                      options={[
-                        { value: "CreatedDate", label: "Created Date" },
-                        { value: "ModifiedDate", label: "Modified Date" },
-                      ]}
+                      options={filterOptions.dateType}
                       isMulti={false}
                     />
                   </div>
@@ -149,13 +175,7 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
                     control="select"
                     label="Due Date"
                     name="DueDate"
-                    options={[
-                      { value: "Today", label: "Today" },
-                      { value: "Tomorrow", label: "Tomorrow" },
-                      { value: "This Week", label: "This Week" },
-                      { value: "Next Week", label: "Next Week" },
-                      { value: "This Month", label: "This Month" },
-                    ]}
+                    options={filterOptions.dueDate}
                     isMulti={false}
                   />
                 </div>

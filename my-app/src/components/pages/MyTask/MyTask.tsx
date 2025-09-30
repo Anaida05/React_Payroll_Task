@@ -47,6 +47,7 @@ const MyTask: React.FC = () => {
   const [loadingTasks, setLoadingTasks] = useState<Set<number>>(new Set());
   const [newTaskModalOpen, setNewTaskModalOpen] = useState<boolean>(false);
   const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
+  const [appliedFilters, setAppliedFilters] = useState<any>({});
 
   const dispatch = useDispatch<any>();
 
@@ -75,6 +76,105 @@ const MyTask: React.FC = () => {
 
   const handleFilterModalClose = () => {
     setFilterModalOpen(false);
+  };
+
+  const handleFilterApplied = (filters: any) => {
+    console.log("🔍 Filters applied:", filters);
+    setAppliedFilters(filters);
+  };
+
+  const handleRemoveFilter = (filterKey: string) => {
+    const newFilters = { ...appliedFilters };
+    
+    // Handle special cases for related filters
+    if (filterKey === 'DateType') {
+      delete newFilters.DateType;
+      delete newFilters.FromCreatedDate;
+      delete newFilters.ToCreatedDate;
+    } else if (filterKey === 'dateRange') {
+      delete newFilters.FromCreatedDate;
+      delete newFilters.ToCreatedDate;
+    } else if (filterKey === 'TaskType') {
+      delete newFilters.TaskType;
+    } else if (filterKey === 'TaskTypeValue') {
+      delete newFilters.TaskType;
+    } else if (filterKey === 'DueDate') {
+      delete newFilters.DueDate;
+    } else if (filterKey === 'DueDateValue') {
+      delete newFilters.DueDate;
+    } else {
+      delete newFilters[filterKey];
+    }
+    
+    setAppliedFilters(newFilters);
+    
+    // Update the API call with remaining filters
+    const params = getTaskParams();
+    const updatedParams = { ...params, ...newFilters };
+    dispatch(fetchMyTask(updatedParams) as any);
+  };
+
+  const handleClearAllFilters = () => {
+    setAppliedFilters({});
+    const params = getTaskParams();
+    dispatch(fetchMyTask(params) as any);
+  };
+
+  const renderFilterChips = () => {
+    const chips = [];
+    
+    console.log("🔍 Rendering filter chips for:", appliedFilters);
+    
+    // Date Type filter
+    if (appliedFilters.DateType) {
+      chips.push({
+        key: 'DateType',
+        label: `By ${appliedFilters.DateType === 'ModifiedDate' ? 'ModifiedDate' : 'CreatedDate'}`,
+        type: 'blue'
+      });
+    }
+    
+    // Date Range filter
+    if (appliedFilters.FromCreatedDate && appliedFilters.ToCreatedDate) {
+      const fromDate = dayjs(appliedFilters.FromCreatedDate).format('DD MMM YYYY');
+      const toDate = dayjs(appliedFilters.ToCreatedDate).format('DD MMM YYYY');
+      chips.push({
+        key: 'dateRange',
+        label: `From ${fromDate} To ${toDate}`,
+        type: 'white'
+      });
+    }
+    
+    // Task Type filter
+    if (appliedFilters.TaskType) {
+      chips.push({
+        key: 'TaskType',
+        label: `By Task Type`,
+        type: 'blue'
+      });
+      chips.push({
+        key: 'TaskTypeValue',
+        label: appliedFilters.TaskType,
+        type: 'white'
+      });
+    }
+    
+    // Due Date filter
+    if (appliedFilters.DueDate) {
+      chips.push({
+        key: 'DueDate',
+        label: `By Due Date`,
+        type: 'blue'
+      });
+      chips.push({
+        key: 'DueDateValue',
+        label: appliedFilters.DueDate,
+        type: 'white'
+      });
+    }
+    
+    console.log("🔍 Generated chips:", chips);
+    return chips;
   };
 
   const getTaskParams = (): FetchMyTaskParams => {
@@ -341,6 +441,28 @@ const MyTask: React.FC = () => {
         </div>
       </div>
 
+      {/* Applied Filters Display */}
+      {Object.keys(appliedFilters).length > 0 && (
+        <div className={styles.appliedFiltersContainer}>
+          <div className={styles.filterChips}>
+            {renderFilterChips().map((chip, index) => (
+              <div
+                key={index}
+                className={`${styles.filterChip} ${styles[chip.type]}`}
+                onClick={() => handleRemoveFilter(chip.key)}
+              >
+                <span className={styles.chipLabel}>{chip.label}</span>
+                <span className={styles.chipClose}>×</span>
+              </div>
+            ))}
+          </div>
+          <div className={styles.clearAllFilters} onClick={handleClearAllFilters}>
+            <span>Clear Filter</span>
+            <span className={styles.clearIcon}>×</span>
+          </div>
+        </div>
+      )}
+
       <div className={styles.tabContainer}>
         <div
           className={`${styles.tab} ${activeTab === "My Task" ? styles.activeTab : ""
@@ -445,6 +567,7 @@ const MyTask: React.FC = () => {
         <FilterTask
           closeModal={handleFilterModalClose}
           teamMembers={[]} // You can pass actual team members here
+          onFiltersApplied={handleFilterApplied}
         />
       )}
     </div>
