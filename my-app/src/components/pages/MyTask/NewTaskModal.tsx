@@ -80,7 +80,8 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose, onSave }) =>
       PaperProps={{
         sx: {
           borderRadius: 2,
-          minHeight: "500px",
+          minHeight: "350px",
+          maxHeight: "400px",
         },
       }}
     >
