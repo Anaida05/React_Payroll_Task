@@ -42,11 +42,12 @@ const PercentageModal: React.FC<PercentageModalProps> = ({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 420,
+          width: 320,
           bgcolor: "background.paper",
           borderRadius: 2,
-          boxShadow: 24,
-          p: 3,
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+          p: 2,
+          outline: "none",
         }}
       >
         {/* Header */}
@@ -55,9 +56,9 @@ const PercentageModal: React.FC<PercentageModalProps> = ({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: 2,
+            mb: 1.5,
             borderBottom: "1px solid #eee",
-            pb: 1,
+            pb: 0.5,
           }}
         >
           <Typography
@@ -84,31 +85,12 @@ const PercentageModal: React.FC<PercentageModalProps> = ({
           </Button>
         </Box>
 
-        {/* Task Title */}
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 2,
-            color: "#666",
-            fontWeight: 500,
-          }}
-        >
-          {taskTitle}
-        </Typography>
+        
 
-        {/* Current Percentage */}
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 2,
-            color: "#666",
-          }}
-        >
-          Current: {currentPercentage}%
-        </Typography>
+      
 
         {/* Percentage Grid */}
-        <Grid container spacing={1} sx={{ mb: 2 }}>
+        <Grid container spacing={0.5} sx={{ mb: 1.5 }}>
           {percentages.map((percentage) => (
             <Grid item xs={2.4} key={percentage}>
               <Button
@@ -116,12 +98,13 @@ const PercentageModal: React.FC<PercentageModalProps> = ({
                 onClick={() => handlePercentageClick(percentage)}
                 sx={{
                   width: "100%",
-                  height: 40,
-                  borderRadius: 2,
+                  height: 32,
+                  borderRadius: 1,
                   borderColor: percentage === currentPercentage ? "#1976d2" : "#e0e0e0",
                   backgroundColor: percentage === currentPercentage ? "#e3f2fd" : "transparent",
                   color: percentage === currentPercentage ? "#1976d2" : "#333",
                   fontWeight: percentage === currentPercentage ? 600 : 400,
+                  fontSize: "12px",
                   "&:hover": {
                     borderColor: "#1976d2",
                     backgroundColor: "#e3f2fd",
