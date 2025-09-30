@@ -397,7 +397,6 @@ const MyTask: React.FC = () => {
   };
   const renderTaskItem = (taskItem: Task, isCompletedList: boolean) => {
     const isLoading = loadingTasks.has(taskItem.TaskId);
-    console.log("📋 Rendering task:", { taskId: taskItem.TaskId, title: taskItem.Title, status: taskItem.TaskStatus, isCompletedList, isLoading });
     
     return (
       <div key={taskItem.TaskId} className={styles.taskItem}>
@@ -408,7 +407,6 @@ const MyTask: React.FC = () => {
           <Tooltip title="Click to undo task">
             <IconButton
               onClick={() => {
-                console.log("🎯 Checkmark clicked to undo task:", taskItem.TaskId);
                 handleCompleteTask(taskItem, false);
               }}
               size="small"
@@ -435,8 +433,8 @@ const MyTask: React.FC = () => {
         <div className={styles.taskTitle}>{taskItem.Title}</div>
         <div className={`${styles.taskTime} ${styles[getTaskStatusForStyling(taskItem) as keyof typeof styles]}`}>
           {isCompletedList
-            ? taskItem.CompletionDate || `Completed on: ${dayjs(taskItem.CreateDate).format('MMM DD, YYYY')}`
-            : dayjs(taskItem.CreateDate).fromNow()
+            ? taskItem.CompletionDate || `Completed on: ${dayjs(taskItem.TaskEndDate).format('MMM DD, YYYY')}`
+            : dayjs(taskItem.TaskEndDate).fromNow()
           }
         </div>
       </div>
