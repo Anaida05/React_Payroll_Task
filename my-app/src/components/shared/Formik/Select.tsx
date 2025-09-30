@@ -45,20 +45,42 @@ const CustomSelect: React.FC<CustomSelectProps> = (props) => {
     // console.log("value1", value1);
   };
 
+  // Get the current value to display
+  const getCurrentValue = () => {
+    const currentValue = formik.values[name];
+    
+    if (rest.isMulti) {
+      // For multi-select, return array of selected options
+      if (Array.isArray(currentValue)) {
+        return options.filter(option => currentValue.includes(option.value));
+      }
+      return [];
+    } else {
+      // For single select, return the selected option
+      return options.find(option => option.value === currentValue) || null;
+    }
+  };
+
   const customStyles: StylesConfig<OptionType, boolean> = {
     control: (provided) => ({
       ...provided,
-      width: "185px",
-      borderRadius: "5px",
+      width: "100%",
+      minWidth: "185px",
+      borderRadius: "6px",
       fontWeight: 500,
-      border: "0.5px solid #e1e1ef",
-      fontSize: "12px",
-      color: "rgb(10, 10, 57) !important",
+      border: "1px solid #ddd",
+      fontSize: "14px",
+      color: "#333 !important",
       textAlign: "start",
       boxShadow: "none",
       padding: "0px",
+      minHeight: "40px",
       "&:hover": {
-        border: "0.5px solid #e1e1ef",
+        border: "1px solid #1976d2",
+      },
+      "&:focus": {
+        border: "1px solid #1976d2",
+        boxShadow: "0 0 0 2px rgba(25, 118, 210, 0.1)",
       },
     }),
     placeholder: (provided) => ({
@@ -67,7 +89,7 @@ const CustomSelect: React.FC<CustomSelectProps> = (props) => {
     }),
     singleValue: (provided) => ({
       ...provided,
-      color: "rgb(10, 10, 57)",
+      color: "#333",
     }),
   };
 
@@ -83,7 +105,7 @@ const CustomSelect: React.FC<CustomSelectProps> = (props) => {
         styles={customStyles}
         options={options}
         onChange={handleSelectChange}
-        value={formik.values[name]}
+        value={getCurrentValue()}
         {...rest}
         isSearchable={true}
       />

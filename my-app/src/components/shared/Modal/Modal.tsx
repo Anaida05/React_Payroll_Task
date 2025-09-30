@@ -5,14 +5,24 @@ interface ModalProps {
   children: React.ReactNode;
   header: string;
   closeModal: () => void;
-  closeDropDown: () => void;
+  closeDropDown?: () => void;
 }
 
 const Modal: React.FC<ModalProps> = ({ children, header, closeModal, closeDropDown }) => {
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
+
+  const handleModalContentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
   return (
     <>
-      <div className={styles.userModalDiv}>
-        <div className={styles.userFieldDiv} onClick={closeDropDown}>
+      <div className={styles.userModalDiv} onClick={handleBackdropClick}>
+        <div className={styles.userFieldDiv} onClick={handleModalContentClick}>
           <span className={styles.closeIconModal} onClick={closeModal}>
             x
           </span>

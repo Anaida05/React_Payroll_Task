@@ -188,3 +188,4 @@ const NewTaskModal: React.FC<NewTaskModalProps> = ({ open, onClose, onSave }) =>
 };
 
 export default NewTaskModal;
+

@@ -28,6 +28,8 @@ const CustomDatePicker = (props) => {
             className={styles.inputField}
             placeholderText="Select a date"
             dateFormat="dd MMM, yyyy"
+            wrapperClassName="date-picker-wrapper"
+            showPopperArrow={false}
           />
         )}
       </Field>

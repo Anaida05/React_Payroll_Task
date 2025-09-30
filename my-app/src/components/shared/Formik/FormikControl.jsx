@@ -6,7 +6,7 @@ const FormikControl = (props) => {
     const { control, ...rest } = props
     switch (control) {
         case 'input': return <Input {...rest} />
-        case 'select': return <CustomSelect {...rest} isMulti={true}  />
+        case 'select': return <CustomSelect {...rest} />
         case 'datePicker': return <DatePicker {...rest}/>
         default: return null
     }

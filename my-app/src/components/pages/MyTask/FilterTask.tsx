@@ -9,7 +9,7 @@ import { privatePost } from "../../services/privateRequest";
 import { ADDTASK } from "../../services/apiEndPoints";
 import toast from "react-hot-toast";
 import { priorities, status } from "../../../utils/utils";
-import styles from "./AddTask.module.css";
+import styles from "./FilterTask.module.css";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyTask, setFilterApplied } from "../../slices/myTaskSlice";
 
@@ -25,11 +25,11 @@ interface FilterTaskProps {
 }
 
 interface FormValues {
-  status: string | null;
-  priority: string | null;
-  members: string[];
-  fromDate: string | null;
-  toDate: string | null;
+  TaskType: string | null;
+  DateType: string | null;
+  FromCreatedDate: string | null;
+  ToCreatedDate: string | null;
+  DueDate: string | null;
 }
 
 const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
@@ -37,11 +37,11 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
 
   // Form initial values
   const initialValues: FormValues = {
-    status: "",
-    priority: "",
-    members: [],
-    fromDate: "",
-    toDate: "",
+    TaskType: "",
+    DateType: "",
+    FromCreatedDate: null,
+    ToCreatedDate: null,
+    DueDate: null,
   };
 
   // Getting the state from the Redux store
@@ -55,15 +55,15 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
 
   // Handle form submission
   const handleSubmit = async (values: FormValues) => {
-    const formattedFromDate = dayjs(values.fromDate).format("MM/DD/YYYY");
-    const formattedToDate = dayjs(values.toDate).format("MM/DD/YYYY");
+    const formattedFromDate = values.FromCreatedDate ? dayjs(values.FromCreatedDate).format("MM/DD/YYYY") : "";
+    const formattedToDate = values.ToCreatedDate ? dayjs(values.ToCreatedDate).format("MM/DD/YYYY") : "";
 
     const newParams = {
-      UserIds: values.members,
-      TaskStatus: values.status ? values.status : "",
-      Priority: values.priority ? values.priority : "",
-      FromDueDate: formattedFromDate ? formattedFromDate : "",
-      ToDueDate: formattedToDate ? formattedToDate : "",
+      TaskType: values.TaskType || "",
+      DateType: values.DateType || "",
+      FromCreatedDate: formattedFromDate,
+      ToCreatedDate: formattedToDate,
+      DueDate: values.DueDate || "",
     };
 
     const updatedParams = {
@@ -72,14 +72,28 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
     };
 
     // Dispatch actions to fetch tasks with updated filters
-    dispatch(fetchMyTask(updatedParams));
+    dispatch(fetchMyTask(updatedParams) as any);
     dispatch(setFilterApplied(true));
     closeModal();
   };
 
+  // Handle clear filters
+  const handleClearFilters = () => {
+    const clearedParams = {
+      From: lastParams.From || 1,
+      To: lastParams.To || 10,
+      Search: lastParams.Search || "",
+      IsFavourite: lastParams.IsFavourite || false,
+    };
+    
+    dispatch(fetchMyTask(clearedParams as any) as any);
+    dispatch(setFilterApplied(false));
+    closeModal();
+  };
+
   return (
-    <Modal header={"Filter Task"} closeModal={closeModal}>
-      <div>
+    <Modal header={"Filter"} closeModal={closeModal}>
+      <div className={styles.filterContainer} onClick={(e) => e.stopPropagation()}>
         <Formik
           initialValues={initialValues}
           onSubmit={handleSubmit}
@@ -87,67 +101,81 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers }) => {
           {(formik) => {
             return (
               <Form>
-                <div>
-                  <div className={styles.row}>
-                    <FormikControl
-                      control="select"
-                      label="Select Status"
-                      name="status"
-                      options={status.map((option) => ({
-                        value: option.value,
-                        label: option.label,
-                      }))}
-                      isMulti={false}
-                    />
-                    <FormikControl
-                      control="select"
-                      label="Select Priority"
-                      name="priority"
-                      options={priorities.map((priority) => ({
-                        value: priority.value,
-                        label: priority.label,
-                      }))}
-                      isMulti={false}
-                    />
-                  </div>
-                  <div className={styles.row}>
-                    <FormikControl
-                      control="select"
-                      label="Add Members"
-                      name="members"
-                      options={teamMembers.map((member) => ({
-                        value: member.UserId.toString(),
-                        label: member.Name,
-                      }))}
-                      isMulti={true}
-                    />
-                    <FormikControl
-                      control="datePicker"
-                      label="From due date"
-                      name="fromDate"
-                    />
-                  </div>
+                <div className={styles.filterSection}>
+                  <h3 className={styles.sectionTitle}>By Task Type</h3>
+                  <FormikControl
+                    control="select"
+                    label="Task Type"
+                    name="TaskType"
+                    options={[
+                      { value: "Recurring", label: "Recurring" },
+                      { value: "Non Recurring", label: "Non Recurring" },
+                    ]}
+                    isMulti={false}
+                  />
+                </div>
 
-                  <div className={styles.row}>
+                <div className={styles.filterSection}>
+                  <h3 className={styles.sectionTitle}>By Date</h3>
+                  <div className={styles.dateRow}>
+                    <FormikControl
+                      control="select"
+                      label="Date Type"
+                      name="DateType"
+                      options={[
+                        { value: "CreatedDate", label: "Created Date" },
+                        { value: "ModifiedDate", label: "Modified Date" },
+                      ]}
+                      isMulti={false}
+                    />
+                  </div>
+                  <div className={styles.dateRangeRow}>
                     <FormikControl
                       control="datePicker"
-                      label="To due date"
-                      name="toDate"
+                      label="From Date"
+                      name="FromCreatedDate"
+                    />
+                    <FormikControl
+                      control="datePicker"
+                      label="To Date"
+                      name="ToCreatedDate"
                     />
                   </div>
                 </div>
 
-                <div className={styles.btnDiv}>
-                  <button
-                    className={styles.addCancelBtn}
-                    onClick={handleCloseFun}
+                <div className={styles.filterSection}>
+                  <h3 className={styles.sectionTitle}>By Due Date</h3>
+                  <FormikControl
+                    control="select"
+                    label="Due Date"
+                    name="DueDate"
+                    options={[
+                      { value: "Today", label: "Today" },
+                      { value: "Tomorrow", label: "Tomorrow" },
+                      { value: "This Week", label: "This Week" },
+                      { value: "Next Week", label: "Next Week" },
+                      { value: "This Month", label: "This Month" },
+                    ]}
+                    isMulti={false}
+                  />
+                </div>
+
+                <div className={styles.buttonContainer}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleClearFilters}
+                    className={styles.clearButton}
                     type="button"
                   >
-                    Cancel
-                  </button>
-                  <button className={styles.addCancelBtn} type="submit">
-                    Apply Filters
-                  </button>
+                    Clear
+                  </Button>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    className={styles.applyButton}
+                  >
+                    Apply
+                  </Button>
                 </div>
               </Form>
             );

@@ -1,6 +1,6 @@
 
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ADDTASK, MYTASK, STARRED_TASK_FIELD, ACCEPT_TASK, UPDATE_TASK_STATUS } from "../services/apiEndPoints";
+import { ADDTASK, TASK, STARRED_TASK_FIELD, ACCEPT_TASK, UPDATE_TASK_STATUS } from "../services/apiEndPoints";
 import { privatePost, privatePut } from "../services/privateRequest";
 import toast from "react-hot-toast";
 
@@ -30,8 +30,16 @@ export interface FetchMyTaskParams {
   From: number;
   To: number;
   UserId?: string;
-  Title: string;
+  Search?: string;
   IsFavourite?: boolean;
+  TaskType?: string;
+  DateType?: string;
+  FromCreatedDate?: string;
+  ToCreatedDate?: string;
+  DueDate?: string;
+  FromDueDate?: string;
+  ToDueDate?: string;
+  IsTarget?: boolean | null;
 }
 
 interface AddTaskParams {
@@ -56,8 +64,9 @@ export interface UndoTaskParams {
 export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
   async (params) => {
-    const res = await privatePost(MYTASK, params);
-    return {data:res.data.data,params};
+    const res = await privatePost(TASK, params);
+    console.log("API Response:", res.data);
+    return {data: res.data, params};
   }
 );
 
@@ -171,9 +180,58 @@ const taskSlice = createSlice({
       state.error = false;
     });
     builder.addCase(fetchMyTask.fulfilled, (state, action) => {
-      state.loading = false
-      state.task = action.payload.data.TaskList;
-      state.totalCount = action.payload.data.TotalCount;
+      state.loading = false;
+      console.log("Redux - Full payload:", action.payload);
+      console.log("Redux - Data:", action.payload.data);
+      
+      // Handle the actual API response structure
+      const responseData: any = action.payload.data;
+      
+      if (responseData && responseData.Status === 200) {
+        // API response structure: {Status: 200, Message: "Success", data: {...}}
+        const apiData = responseData.data;
+        
+        if (apiData) {
+          // Check for different possible task list properties
+          const taskList = apiData.TaskList || apiData.Tasks || apiData.Pending || apiData.Completed || [];
+          
+          if (Array.isArray(taskList)) {
+            state.task = taskList;
+            state.totalCount = apiData.TotalRecords || apiData.TotalCount || taskList.length;
+          } else if (apiData.Pending && apiData.Completed) {
+            // If tasks are separated into Pending and Completed arrays
+            const allTasks = [...(apiData.Pending || []), ...(apiData.Completed || [])];
+            state.task = allTasks;
+            state.totalCount = apiData.TotalRecords || apiData.TotalCount || allTasks.length;
+          } else {
+            // Fallback - try to find any array in the response
+            const possibleArrays = Object.values(apiData).filter(val => Array.isArray(val));
+            if (possibleArrays.length > 0) {
+              state.task = possibleArrays[0] as any[];
+              state.totalCount = apiData.TotalRecords || apiData.TotalCount || (possibleArrays[0] as any[]).length;
+            } else {
+              state.task = [];
+              state.totalCount = 0;
+            }
+          }
+        } else {
+          state.task = [];
+          state.totalCount = 0;
+        }
+      } else {
+        // Handle other response structures
+        if (responseData && Array.isArray(responseData)) {
+          state.task = responseData;
+          state.totalCount = responseData.length;
+        } else {
+          state.task = [];
+          state.totalCount = 0;
+        }
+      }
+      
+      console.log("Redux - Final task array:", state.task);
+      console.log("Redux - Final total count:", state.totalCount);
+      
       state.lastParams = action.payload.params;
     });
     builder.addCase(fetchMyTask.rejected, (state) => {

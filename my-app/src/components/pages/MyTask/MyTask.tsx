@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask, } from "../../slices/myTaskSlice";
+import toast from "react-hot-toast";
 import {
   Button,
   CircularProgress,
@@ -9,26 +10,28 @@ import {
   Radio,
 } from "@mui/material";
 import { Star, StarBorder, CheckCircle } from "@mui/icons-material";
-import styles from "./Mytask.module.css";
+import styles from "./MyTask.module.css";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Loader from "../../shared/Loader/Loader";
 import NewTaskModal from "./NewTaskModal";
+import FilterTask from "./FilterTask";
 
 dayjs.extend(relativeTime);
 
 interface Task {
   TaskId: number;
   Title: string;
-  AssignedByUserName: string;
-  CreateDate: string;
-  TaskStatus: number;
+  AssignedByUserName?: string;
+  CreateDate?: string;
+  TaskStatus: number | string;
   Starred?: boolean;
-  IsFavourite: boolean;
+  IsFavourite?: boolean;
   AssignedToUsers?: Array<{
-    TaskStatus: string;
+    TaskStatus: string | number;
   }>;
   CompletionDate?: string;
+  [key: string]: any; // Allow additional properties
 }
 
 const MyTask: React.FC = () => {
@@ -43,6 +46,7 @@ const MyTask: React.FC = () => {
   const [completedTasks, setCompletedTasks] = useState<Task[]>([]);
   const [loadingTasks, setLoadingTasks] = useState<Set<number>>(new Set());
   const [newTaskModalOpen, setNewTaskModalOpen] = useState<boolean>(false);
+  const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
 
   const dispatch = useDispatch<any>();
 
@@ -65,11 +69,19 @@ const MyTask: React.FC = () => {
     setNewTaskModalOpen(false);
   };
 
+  const handleFilterModalOpen = () => {
+    setFilterModalOpen(true);
+  };
+
+  const handleFilterModalClose = () => {
+    setFilterModalOpen(false);
+  };
+
   const getTaskParams = (): FetchMyTaskParams => {
     const params: FetchMyTaskParams = {
       From: currentPage * itemsPerPage + 1,
       To: (currentPage + 1) * itemsPerPage,
-      Title: debouncedSearch,
+      Search: debouncedSearch,
     };
 
     if (activeTab === "Starred") {
@@ -87,30 +99,56 @@ const MyTask: React.FC = () => {
 
   useEffect(() => {
     console.log("🔍 Raw tasks from Redux:", task);
+    console.log("🔍 Task type:", typeof task);
+    console.log("🔍 Task length:", task?.length);
     console.log("🔍 Pending tasks:", pendingTasks);
     console.log("🔍 Completed tasks:", completedTasks);
     
-    if (task) {
+    if (task && Array.isArray(task)) {
+      console.log("🔍 Processing tasks array...");
       const tasksWithStars = task.map((taskItem: Task) => ({
         ...taskItem,
         Starred: taskItem.IsFavourite,
       }));
 
-      const pending = tasksWithStars.filter((t: Task) => t.TaskStatus !== 100);
-      const completed = tasksWithStars.filter((t: Task) => t.TaskStatus === 100);
+      // Handle different TaskStatus formats (number, string, or percentage)
+      const pending = tasksWithStars.filter((t: Task) => {
+        const status = t.TaskStatus;
+        if (typeof status === 'number') {
+          return status !== 100;
+        } else if (typeof status === 'string') {
+          return status.toLowerCase() !== 'completed' && status !== '100';
+        }
+        return true; // Default to pending if status is unclear
+      });
+
+      const completed = tasksWithStars.filter((t: Task) => {
+        const status = t.TaskStatus;
+        if (typeof status === 'number') {
+          return status === 100;
+        } else if (typeof status === 'string') {
+          return status.toLowerCase() === 'completed' || status === '100';
+        }
+        return false; // Default to not completed if status is unclear
+      });
 
       console.log("🔍 Filtered pending tasks:", pending);
       console.log("🔍 Filtered completed tasks:", completed);
+      console.log("🔍 Sample task statuses:", tasksWithStars.map(t => ({ id: t.TaskId, status: t.TaskStatus, type: typeof t.TaskStatus })));
 
       setPendingTasks(pending);
       setCompletedTasks(completed);
+    } else {
+      console.log("🔍 No tasks or tasks is not an array");
+      setPendingTasks([]);
+      setCompletedTasks([]);
     }
   }, [task]);
 
   useEffect(() => {
     if (activeTab === "My Task" || activeTab === "Starred") {
       const params = getTaskParams();
-      dispatch(fetchMyTask(params));
+      dispatch(fetchMyTask(params) as any);
     }
   }, [dispatch, itemsPerPage, currentPage, debouncedSearch, activeTab]);
 
@@ -248,7 +286,7 @@ const MyTask: React.FC = () => {
         {!isCompletedList && (
           <div className={styles.taskProgress}>
             <span className={styles.progressPercentage}>
-              {taskItem.AssignedToUsers?.[0]?.TaskStatus}%
+              {String(taskItem.AssignedToUsers?.[0]?.TaskStatus || 0)}%
             </span>
             <CircularProgress
               variant="determinate"
@@ -283,7 +321,7 @@ const MyTask: React.FC = () => {
     <div className={styles.taskContainer}>
       <div className={styles.topBar}>
         <div className={styles.filterButton}>
-          <Button variant="outlined">Filter</Button>
+          <Button variant="outlined" onClick={handleFilterModalOpen}>Filter</Button>
         </div>
         <div className={styles.searchAndAdd}>
           <input
@@ -380,7 +418,6 @@ const MyTask: React.FC = () => {
 
                   {isCompletedAccordionOpen && (
                     <div className={`${styles.taskList} ${styles.completedTaskList}`}>
-                      {console.log("🎯 Rendering completed tasks:", completedTasks)}
                       {completedTasks?.map((taskItem: Task) => renderTaskItem(taskItem, true))}
                     </div>
                   )}
@@ -402,6 +439,14 @@ const MyTask: React.FC = () => {
         onClose={handleNewTaskModalClose}
         onSave={handleNewTaskSave}
       />
+
+      {/* Filter Modal */}
+      {filterModalOpen && (
+        <FilterTask
+          closeModal={handleFilterModalClose}
+          teamMembers={[]} // You can pass actual team members here
+        />
+      )}
     </div>
   );
 };
