@@ -1,6 +1,6 @@
 
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ADDTASK, TASK, STARRED_TASK_FIELD, ACCEPT_TASK, UPDATE_TASK_STATUS } from "../services/apiEndPoints";
+import { ADDTASK, TASK, STARRED_TASK_FIELD, ACCEPT_TASK, UPDATE_TASK_STATUS, UPDATE_TASK_FIELD } from "../services/apiEndPoints";
 import { privatePost, privatePut } from "../services/privateRequest";
 import toast from "react-hot-toast";
 
@@ -126,6 +126,34 @@ export const undoTask = createAsyncThunk(
     }
   }
 );
+
+export const updateTaskProgress = createAsyncThunk(
+  "task/updateTaskProgress",
+  async ({ taskId, progress }: { taskId: number; progress: number }, { rejectWithValue }) => {
+    try {
+      const urlWithTaskId = `${UPDATE_TASK_FIELD}?taskId=${taskId}`;
+      const payload = {
+        FieldName: "TaskStatus",
+        Value: progress,
+        IsMyTask: true,
+      };
+
+      console.log("Update Task Progress - URL:", urlWithTaskId);
+      console.log("Update Task Progress - Payload:", payload);
+      
+      const response = await privatePut(urlWithTaskId, payload);
+      console.log("Update Task Progress - Response:", response);
+      
+      toast.success(`Task progress updated to ${progress}%`);
+      
+      return { taskId, progress };
+    } catch (err: any) {
+      console.error("Update Task Progress - Error:", err);
+      toast.error("Failed to update task progress.");
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
 export const markTaskCompleted = createAsyncThunk(
   "task/markTaskCompleted",
   async ({ taskId, isMyTask }: { taskId: number; isMyTask: boolean }, { dispatch, rejectWithValue, getState }) => {
@@ -242,6 +270,9 @@ const taskSlice = createSlice({
       state.error = true;
     });
     builder.addCase(undoTask.rejected, (state, action) => {
+      state.error = true;
+    });
+    builder.addCase(updateTaskProgress.rejected, (state, action) => {
       state.error = true;
     });
   },

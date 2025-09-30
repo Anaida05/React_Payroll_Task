@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask } from "../../slices/myTaskSlice";
+import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask, updateTaskProgress } from "../../slices/myTaskSlice";
 import { AppDispatch } from "../../../store/store";
 import toast from "react-hot-toast";
 import {
@@ -17,6 +17,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import Loader from "../../shared/Loader/Loader";
 import NewTaskModal from "./NewTaskModal";
 import FilterTask from "./FilterTask";
+import PercentageModal from "./PercentageModal";
 
 dayjs.extend(relativeTime);
 
@@ -74,6 +75,8 @@ const MyTask: React.FC = () => {
   const [loadingTasks, setLoadingTasks] = useState<Set<number>>(new Set());
   const [newTaskModalOpen, setNewTaskModalOpen] = useState<boolean>(false);
   const [filterModalOpen, setFilterModalOpen] = useState<boolean>(false);
+  const [percentageModalOpen, setPercentageModalOpen] = useState<boolean>(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [appliedFilters, setAppliedFilters] = useState<any>({});
 
   const dispatch = useDispatch<AppDispatch>();
@@ -145,6 +148,40 @@ const MyTask: React.FC = () => {
     setAppliedFilters({});
     const params = getTaskParams();
     dispatch(fetchMyTask(params));
+  };
+
+  const handlePercentageClick = (taskItem: Task) => {
+    setSelectedTask(taskItem);
+    setPercentageModalOpen(true);
+  };
+
+  const handlePercentageModalClose = () => {
+    setPercentageModalOpen(false);
+    setSelectedTask(null);
+  };
+
+  const handlePercentageSelect = async (percentage: number) => {
+    if (!selectedTask) return;
+
+    try {
+      await dispatch(updateTaskProgress({ 
+        taskId: selectedTask.TaskId, 
+        progress: percentage 
+      }));
+
+      // Update the task progress in local state
+      const updateTaskProgressInState = (prevTasks: Task[]) => 
+        prevTasks.map(task => 
+          task.TaskId === selectedTask.TaskId 
+            ? { ...task, AssignedToUsers: [{ TaskStatus: percentage }] }
+            : task
+        );
+
+      setPendingTasks(updateTaskProgressInState);
+      setCompletedTasks(updateTaskProgressInState);
+    } catch (error) {
+      console.error("Error updating task progress:", error);
+    }
   };
 
   const renderFilterChips = () => {
@@ -407,7 +444,12 @@ const MyTask: React.FC = () => {
       {/* Right side: Progress, Star, Actions */}
       <div className={styles.taskRight}>
         {!isCompletedList && (
-          <div className={styles.taskProgress}>
+          <div 
+            className={styles.taskProgress}
+            onClick={() => handlePercentageClick(taskItem)}
+            style={{ cursor: 'pointer' }}
+            title="Click to update progress"
+          >
             <span className={styles.progressPercentage}>
               {String(taskItem.AssignedToUsers?.[0]?.TaskStatus || 0)}%
             </span>
@@ -589,10 +631,19 @@ const MyTask: React.FC = () => {
       {filterModalOpen && (
         <FilterTask
           closeModal={handleFilterModalClose}
-          teamMembers={[]} // You can pass actual team members here
+          teamMembers={[]} 
           onFiltersApplied={handleFilterApplied}
         />
       )}
+
+      {/* Percentage Modal */}
+      <PercentageModal
+        open={percentageModalOpen}
+        onClose={handlePercentageModalClose}
+        onPercentageSelect={handlePercentageSelect}
+        currentPercentage={selectedTask ? parseFloat(String(selectedTask.AssignedToUsers?.[0]?.TaskStatus || "0")) : 0}
+        taskTitle={selectedTask?.Title || ""}
+      />
     </div>
   );
 };
