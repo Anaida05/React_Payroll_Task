@@ -302,11 +302,25 @@ const MyTask: React.FC = () => {
       // All tasks from API are pending (since API doesn't return completed tasks)
       setPendingTasks(tasksWithStars);
       console.log("🔍 Set pending tasks:", tasksWithStars.length);
+      
+      // If API returns empty results and filters are applied, clear localStorage completed tasks
+      if (tasksWithStars.length === 0 && Object.keys(appliedFilters).length > 0) {
+        console.log("🔍 API returned empty results with filters applied - clearing localStorage completed tasks");
+        setCompletedTasks([]);
+        localStorage.removeItem('completedTasks');
+      }
     } else {
       console.log("🔍 No tasks or tasks is not an array");
       setPendingTasks([]);
+      
+      // If no tasks and filters are applied, clear localStorage completed tasks
+      if (Object.keys(appliedFilters).length > 0) {
+        console.log("🔍 No tasks with filters applied - clearing localStorage completed tasks");
+        setCompletedTasks([]);
+        localStorage.removeItem('completedTasks');
+      }
     }
-  }, [task]);
+  }, [task, appliedFilters]);
 
   useEffect(() => {
     if (activeTab === "My Task" || activeTab === "Starred") {
@@ -595,7 +609,13 @@ const MyTask: React.FC = () => {
 
               {isPendingAccordionOpen && (
                 <div className={styles.taskList}>
-                  {pendingTasks?.map((taskItem: Task) => renderTaskItem(taskItem, false))}
+                  {pendingTasks?.length > 0 ? (
+                    pendingTasks?.map((taskItem: Task) => renderTaskItem(taskItem, false))
+                  ) : (
+                    <div className={styles.noDataMessage}>
+                      <p>No pending tasks found</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -617,11 +637,17 @@ const MyTask: React.FC = () => {
                     </div>
                   </div>
 
-                  {isCompletedAccordionOpen && (
-                    <div className={`${styles.taskList} ${styles.completedTaskList}`}>
-                      {completedTasks?.map((taskItem: Task) => renderTaskItem(taskItem, true))}
+              {isCompletedAccordionOpen && (
+                <div className={`${styles.taskList} ${styles.completedTaskList}`}>
+                  {completedTasks?.length > 0 ? (
+                    completedTasks?.map((taskItem: Task) => renderTaskItem(taskItem, true))
+                  ) : (
+                    <div className={styles.noDataMessage}>
+                      <p>No completed tasks found</p>
                     </div>
                   )}
+                </div>
+              )}
                 </>
               )}
             </>

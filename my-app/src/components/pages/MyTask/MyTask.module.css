@@ -1,3 +1,15 @@
+.noDataMessage {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.noDataMessage p {
+  margin: 0;
+  font-size: 14px;
+}
+
 .taskContainer {
   font-family: Arial, sans-serif;
   width: 100%;
