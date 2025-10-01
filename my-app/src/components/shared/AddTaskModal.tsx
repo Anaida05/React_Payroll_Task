@@ -83,6 +83,21 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     timeSlots.push(`${displayHour}:30 ${period}`);
   }
 
+  // ---------- Helper Functions ----------
+  const getEndDate = () => {
+    if (dateChoice === "today") {
+      return dayjs().endOf("day");
+    } else if (dateChoice === "tomorrow") {
+      return dayjs().add(1, "day").endOf("day");
+    } else {
+      const [time, period] = selectedTime.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      return selectedDate.hour(hours).minute(minutes).second(0).add(1, "day");
+    }
+  };
+
   // ---------- Handlers ----------
   const handleSave = () => {
     if (!title.trim()) {
@@ -91,23 +106,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     }
     setTitleError(false);
 
-    let startDate: Dayjs, endDate: Dayjs;
-
-    if (dateChoice === "today") {
-      startDate = dayjs();
-      endDate = dayjs().endOf("day");
-    } else if (dateChoice === "tomorrow") {
-      startDate = dayjs().add(1, "day").startOf("day");
-      endDate = dayjs().add(1, "day").endOf("day");
-    } else {
-      const [time, period] = selectedTime.split(" ");
-      let [hours, minutes] = time.split(":").map(Number);
-      if (period === "PM" && hours !== 12) hours += 12;
-      if (period === "AM" && hours === 12) hours = 0;
-
-      startDate = selectedDate.hour(hours).minute(minutes).second(0);
-      endDate = startDate.add(1, "hour");
-    }
+    const startDate = dayjs();
+    const endDate = getEndDate();
 
     // Build payload matching the exact API schema from your example
     const userList = [
@@ -135,6 +135,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       Target: 0,
       TaskOwners: userList.map((u) => ({ TaskId: 0, UserId: u.UserId, IntercomGroupId: 0 })),
       TaskStartDate: dayjs().format("YYYY-MM-DD HH:mm:ss A"),
+      TaskEndDate: endDate.format("YYYY-MM-DD HH:mm:ss A"), // Add task end date
       TaskStatus: "",
       TaskType: "",
       UserIds: userList.map((u) => ({
@@ -344,7 +345,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
 
           {dateChoice && (
             <Typography variant="body2" color="text.secondary">
-              Selected: {selectedDate.format("ddd, MMM D")} at {selectedTime}
+              Due: {getEndDate().format("ddd, MMM D")} at {getEndDate().format("h:mm A")}
             </Typography>
           )}
         </DialogContent>
