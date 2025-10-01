@@ -195,3 +195,7 @@ export const status = [
   { label: "Partial Completed", value: "Partial Completed" },
   { label: "Completed", value: "Completed" },
 ];
+
+export const setAccessToken = (token: string): void => {
+  localStorage.setItem("token", token);
+};

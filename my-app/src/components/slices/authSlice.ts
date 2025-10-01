@@ -1,7 +1,7 @@
+import { toast } from 'react-hot-toast';
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import publicAPI from "../../services/publicApi";
-import { LOGIN } from "../../services/apiUrl";
-import toast from "../../utils/toast";
+import publicRequest from "../services/publicRequest";
+import { LOGIN } from "../services/apiEndPoints";
 import { setAccessToken } from "../../utils/utils";
 
 interface AuthState {
@@ -23,7 +23,7 @@ export const userLogin = createAsyncThunk<
   { rejectValue: string } // error type
 >("auth/user-login", async (payload, { rejectWithValue }) => {
   try {
-    const res = await publicAPI.post(LOGIN, payload);
+    const res = await publicRequest.post(LOGIN, payload);
     if (res?.data?.success) {
       const combined = `${payload.username}:${payload.password}`;
       const base64Encoded = btoa(combined);
