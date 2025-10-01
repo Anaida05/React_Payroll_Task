@@ -32,7 +32,7 @@ import ModeStandbyIcon from "@mui/icons-material/ModeStandby";
 import RoundIconButton from "./RoundIconButton";
 import AssignMemberModal from "./AssignMemberModal";
 import AddMembersModal from "./AddMembersModal";
-import TargetModal from "./Modal/TargetModal";
+// import TargetModal from "./Modal/TargetModal";
 
 interface AddTaskModalProps {
   open: boolean;
@@ -75,11 +75,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     { UserId: number; Name: string }[]
   >([]);
 
-  const [showTargetModal, setShowTargetModal] = useState<boolean>(false);
-  const [targets, setTargets] = useState<{
-    generalTarget: string;
-    userTargets: { [userId: number]: number };
-  }>({ generalTarget: "", userTargets: {} });
+  // const [showTargetModal, setShowTargetModal] = useState<boolean>(false);
+  // const [targets, setTargets] = useState<{
+  //   generalTarget: string;
+  //   userTargets: { [userId: number]: number };
+  // }>({ generalTarget: "", userTargets: {} });
 
   // ---------- Time Slots ----------
   const timeSlots: string[] = [];
@@ -175,21 +175,21 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     setAttachments((prev) => [...prev, ...Array.from(files)]);
   };
 
-  const handleTargetModalOpen = () => {
-    setShowTargetModal(true);
-  };
+  // const handleTargetModalOpen = () => {
+  //   setShowTargetModal(true);
+  // };
 
-  const handleTargetModalClose = () => {
-    setShowTargetModal(false);
-  };
+  // const handleTargetModalClose = () => {
+  //   setShowTargetModal(false);
+  // };
 
-  const handleTargetSave = (targetData: {
-    generalTarget: string;
-    userTargets: { [userId: number]: number };
-  }) => {
-    setTargets(targetData);
-    console.log("Targets saved:", targetData);
-  };
+  // const handleTargetSave = (targetData: {
+  //   generalTarget: string;
+  //   userTargets: { [userId: number]: number };
+  // }) => {
+  //   setTargets(targetData);
+  //   console.log("Targets saved:", targetData);
+  // };
 
   const handleClose = () => {
     setTitle("");
@@ -197,7 +197,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
     setDateChoice("today");
     setSelectedDateTime(dayjs());
     setSelectedCustomer(null);
-    setTargets({ generalTarget: "", userTargets: {} });
+    // setTargets({ generalTarget: "", userTargets: {} });
     onClose();
   };
 
@@ -329,11 +329,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 ref={fileInputRef}
                 onChange={handleFileChange}
               />
-              <RoundIconButton 
+              {/* <RoundIconButton 
                 icon={<ModeStandbyIcon />} 
                 title="Target" 
                 onClick={handleTargetModalOpen}
-              />
+              /> */}
             </Box>
           </Box>
 
@@ -464,14 +464,14 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         }}
       />
 
-      <TargetModal
+      {/* <TargetModal
         open={showTargetModal}
         onClose={handleTargetModalClose}
         onSave={handleTargetSave}
         selectedUsers={selectedMembers}
         currentUserId={currentUserId}
         currentUserName="Rijo Admin New"
-      />
+      /> */}
     </>
   );
 };

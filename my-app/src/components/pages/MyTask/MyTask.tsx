@@ -510,6 +510,7 @@ const MyTask: React.FC = () => {
             placeholder="Search"
           />
           <Button 
+          sx={{backgroundColor: "#5d78ff"}}
             className={styles.addButton} 
             variant="contained"
             onClick={handleNewTaskModalOpen}
