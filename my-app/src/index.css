@@ -12,3 +12,92 @@ html, body {
     overflow-x: hidden;
     max-width: 100vw;
 }
+
+/* Global Date Picker Styling Overrides */
+.react-datepicker {
+    background-color: white !important;
+    border: 1px solid #e1e1ef !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    font-family: Arial, sans-serif !important;
+    z-index: 9999 !important;
+}
+
+.react-datepicker__header {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #e1e1ef !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.react-datepicker__current-month {
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+.react-datepicker__day-name {
+    color: #666 !important;
+    font-weight: 500 !important;
+}
+
+.react-datepicker__day {
+    color: #333 !important;
+}
+
+.react-datepicker__day:hover {
+    background-color: #e3f2fd !important;
+    color: #1976d2 !important;
+}
+
+.react-datepicker__day--selected {
+    background-color: #1976d2 !important;
+    color: white !important;
+}
+
+.react-datepicker__day--today {
+    background-color: #f0f0f0 !important;
+    color: #333 !important;
+    font-weight: 600 !important;
+}
+
+.react-datepicker__day--disabled {
+    color: #ccc !important;
+}
+
+.react-datepicker__navigation {
+    background-color: transparent !important;
+}
+
+.react-datepicker__navigation:hover {
+    background-color: #f0f0f0 !important;
+}
+
+.react-datepicker__navigation-icon::before {
+    border-color: #666 !important;
+}
+
+.react-datepicker__time-container {
+    background-color: white !important;
+    border-left: 1px solid #e1e1ef !important;
+}
+
+.react-datepicker__time-list-item:hover {
+    background-color: #e3f2fd !important;
+}
+
+.react-datepicker__time-list-item--selected {
+    background-color: #1976d2 !important;
+    color: white !important;
+}
+
+/* Override any dark theme styles */
+.react-datepicker-popper {
+    z-index: 9999 !important;
+}
+
+.react-datepicker-popper[data-placement^="bottom"] {
+    margin-top: 8px !important;
+}
+
+.react-datepicker-popper[data-placement^="top"] {
+    margin-bottom: 8px !important;
+}

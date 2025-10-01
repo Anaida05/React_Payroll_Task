@@ -151,6 +151,95 @@
   height: 26px !important;
 }
 
+/* Enhanced date picker dropdown styling for filter modal */
+.filterContainer .react-datepicker {
+  background-color: white !important;
+  border: 1px solid #e1e1ef !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  font-family: Arial, sans-serif !important;
+  z-index: 9999 !important;
+  font-size: 12px !important;
+}
+
+.filterContainer .react-datepicker__header {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e1e1ef !important;
+  border-radius: 8px 8px 0 0 !important;
+  padding: 8px 0 !important;
+}
+
+.filterContainer .react-datepicker__current-month {
+  color: #333 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+.filterContainer .react-datepicker__day-name {
+  color: #666 !important;
+  font-weight: 500 !important;
+  font-size: 11px !important;
+}
+
+.filterContainer .react-datepicker__day {
+  color: #333 !important;
+  font-size: 12px !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+.filterContainer .react-datepicker__day:hover {
+  background-color: #e3f2fd !important;
+  color: #1976d2 !important;
+  border-radius: 4px !important;
+}
+
+.filterContainer .react-datepicker__day--selected {
+  background-color: #1976d2 !important;
+  color: white !important;
+  border-radius: 4px !important;
+}
+
+.filterContainer .react-datepicker__day--today {
+  background-color: #f0f0f0 !important;
+  color: #333 !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+}
+
+.filterContainer .react-datepicker__day--disabled {
+  color: #ccc !important;
+}
+
+.filterContainer .react-datepicker__navigation {
+  background-color: transparent !important;
+  top: 8px !important;
+}
+
+.filterContainer .react-datepicker__navigation:hover {
+  background-color: #f0f0f0 !important;
+  border-radius: 4px !important;
+}
+
+.filterContainer .react-datepicker__navigation-icon::before {
+  border-color: #666 !important;
+  border-width: 2px 2px 0 0 !important;
+}
+
+/* Ensure proper positioning */
+.filterContainer .react-datepicker-popper {
+  z-index: 9999 !important;
+}
+
+.filterContainer .react-datepicker-popper[data-placement^="bottom"] {
+  margin-top: 8px !important;
+}
+
+.filterContainer .react-datepicker-popper[data-placement^="top"] {
+  margin-bottom: 8px !important;
+}
+
 /* Dropdown positioning to prevent overflow */
 .filterContainer .MuiSelect-select {
   padding: 4px 6px !important;
