@@ -183,7 +183,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
         open={open}
         onClose={handleClose}
         PaperProps={{
-          sx: { borderRadius: 3, p: 1, width: 500, maxWidth: "90vw" },
+          sx: { 
+            borderRadius: 3, 
+            p: 1, 
+            width: 500, 
+            maxWidth: "90vw",
+            overflow: "hidden"
+          },
         }}
       >
         <DialogTitle
@@ -201,7 +207,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
           </IconButton>
         </DialogTitle>
 
-        <DialogContent dividers sx={{ px: 3, py: 2 }}>
+        <DialogContent dividers sx={{ px: 3, py: 2, overflow: "hidden" }}>
           <TextField
             label="Title"
             fullWidth
@@ -238,7 +244,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             sx={{ mb: 2 }}
           />
 
-          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+          <Box sx={{ display: "flex", gap: 1, mb: 2, flexWrap: "wrap" }}>
             <Button
               variant={dateChoice === "today" ? "contained" : "outlined"}
               size="small"
@@ -271,7 +277,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
             >
               Tomorrow
             </Button>
-            <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
               <RoundIconButton
                 icon={<TodayIcon />}
                 title="Select Date And Time"
@@ -299,49 +305,42 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
                 ref={fileInputRef}
                 onChange={handleFileChange}
               />
-              {attachments.length > 0 && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap", // allow wrapping
-                    gap: 1, // space between items
-                    mt: 2,
-                  }}
-                >
-                  {attachments.map((file, index) => (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 1,
-                        mt: 2,
-                      }}
-                    >
-                      {attachments.map((file, index) => (
-                        <Chip
-                          key={index}
-                          label={file.name}
-                          onDelete={() =>
-                            setAttachments((prev) =>
-                              prev.filter((_, i) => i !== index)
-                            )
-                          }
-                          sx={{
-                            maxWidth: "200px",
-                            "& .MuiChip-label": {
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            },
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  ))}
-                </Box>
-              )}
               <RoundIconButton icon={<ModeStandbyIcon />} title="Target" />
             </Box>
           </Box>
+
+          {/* File attachments display - moved outside the icon buttons row */}
+          {attachments.length > 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+                mb: 2,
+                maxWidth: "100%",
+                overflow: "hidden",
+              }}
+            >
+              {attachments.map((file, index) => (
+                <Chip
+                  key={index}
+                  label={file.name}
+                  onDelete={() =>
+                    setAttachments((prev) =>
+                      prev.filter((_, i) => i !== index)
+                    )
+                  }
+                  sx={{
+                    maxWidth: "200px",
+                    "& .MuiChip-label": {
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    },
+                  }}
+                />
+              ))}
+            </Box>
+          )}
 
           {dateChoice && (
             <Typography variant="body2" color="text.secondary">
