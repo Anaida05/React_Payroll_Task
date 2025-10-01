@@ -112,7 +112,6 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers, onFilt
                   <h3 className={styles.sectionTitle}>By Task Type</h3>
                   <FormikControl
                     control="select"
-                    label="Task Type"
                     name="TaskType"
                     options={[
                       { value: "Recurring", label: "Recurring" },
@@ -128,7 +127,6 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers, onFilt
                   <div className={styles.dateRow}>
                     <FormikControl
                       control="select"
-                      label="Date Type"
                       name="DateType"
                       options={[
                         { value: "CreatedDate", label: "Created Date" },
@@ -155,7 +153,6 @@ const FilterTask: React.FC<FilterTaskProps> = ({ closeModal, teamMembers, onFilt
                   <h3 className={styles.sectionTitle}>By Due Date</h3>
                   <FormikControl
                     control="select"
-                    label="Due Date"
                     name="DueDate"
                     options={[
                       { value: "Today", label: "Today" },

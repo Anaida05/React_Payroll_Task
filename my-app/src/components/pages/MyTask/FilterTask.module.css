@@ -1,32 +1,31 @@
 .filterContainer {
-  padding: 20px;
-  min-width: 450px;
-  max-width: 500px;
+  padding: 8px;
+  width: 450px;
   background: white;
 }
 
 .filterSection {
-  margin-bottom: 24px;
+  margin-bottom: 8px;
 }
 
 .sectionTitle {
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 12px;
+  margin-bottom: 4px;
   margin-top: 0;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .dateRow {
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
 
 .dateRangeRow {
   display: flex;
-  gap: 12px;
-  margin-top: 12px;
+  gap: 4px;
+  margin-top: 4px;
 }
 
 .dateRangeRow > div {
@@ -36,9 +35,9 @@
 .buttonContainer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
-  padding-top: 16px;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 6px;
   border-top: 1px solid #e0e0e0;
 }
 
@@ -47,8 +46,10 @@
   color: #666 !important;
   border: 1px solid #ccc !important;
   text-transform: none !important;
-  padding: 8px 16px !important;
+  padding: 4px 8px !important;
   border-radius: 4px !important;
+  font-size: 11px !important;
+  height: 24px !important;
 }
 
 .clearButton:hover {
@@ -59,8 +60,10 @@
   background-color: #1976d2 !important;
   color: white !important;
   text-transform: none !important;
-  padding: 8px 16px !important;
+  padding: 4px 8px !important;
   border-radius: 4px !important;
+  font-size: 11px !important;
+  height: 24px !important;
 }
 
 .applyButton:hover {
@@ -71,12 +74,13 @@
 .filterContainer input,
 .filterContainer select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 4px 6px;
   border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 4px;
+  font-size: 11px;
   background-color: #fff;
   transition: border-color 0.2s ease;
+  height: 26px;
 }
 
 .filterContainer input:focus,
@@ -88,33 +92,34 @@
 
 .filterContainer label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   font-weight: 500;
   color: #555;
-  font-size: 13px;
+  font-size: 10px;
 }
 
 /* Override FormikControl styles for better modal appearance */
 .filterContainer .inputControl {
-  margin-bottom: 16px;
+  margin-bottom: 6px;
 }
 
 .filterContainer .inputControl span {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   font-weight: 500;
   color: #555;
-  font-size: 13px;
+  font-size: 10px;
 }
 
 .filterContainer .inputField {
   width: 100% !important;
-  padding: 10px 12px !important;
+  padding: 4px 6px !important;
   border: 1px solid #ddd !important;
-  border-radius: 6px !important;
-  font-size: 14px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
   background-color: #fff !important;
   transition: border-color 0.2s ease !important;
+  height: 26px !important;
 }
 
 .filterContainer .inputField:focus {
@@ -138,25 +143,42 @@
 
 .date-picker-wrapper .react-datepicker__input-container input {
   width: 100% !important;
-  padding: 10px 12px !important;
+  padding: 4px 6px !important;
   border: 1px solid #ddd !important;
-  border-radius: 6px !important;
-  font-size: 14px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
   background-color: #fff !important;
+  height: 26px !important;
+}
+
+/* Dropdown positioning to prevent overflow */
+.filterContainer .MuiSelect-select {
+  padding: 4px 6px !important;
+  font-size: 11px !important;
+  height: 26px !important;
+}
+
+.filterContainer .MuiSelect-root {
+  height: 26px !important;
+}
+
+/* Ensure dropdowns open upward when needed */
+.filterContainer .MuiPopover-root {
+  z-index: 9999 !important;
 }
 
 /* Responsive design */
 @media (max-width: 480px) {
   .filterContainer {
     min-width: 300px;
-    padding: 16px;
+    padding: 12px;
   }
-  
+
   .dateRangeRow {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
-  
+
   .buttonContainer {
     flex-direction: column;
   }
