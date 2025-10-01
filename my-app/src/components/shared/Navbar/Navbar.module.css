@@ -16,6 +16,13 @@
   margin-left: 18rem;
   display: flex;
   gap: 1.5rem;
+  align-items: center;
+}
+
+.dateSeparator {
+  color: #ccc;
+  font-weight: normal;
+  margin: 0 0.5rem;
 }
 
 .buttonStyle {
