@@ -50,6 +50,7 @@ const getTaskStatusForStyling = (taskItem: Task): 'completed' | 'overdue' | 'pen
 interface Task {
   TaskId: number;
   Title: string;
+  Description?: string;
   AssignedByUserName?: string;
   CreateDate?: string;
   TaskEndDate?: string;
@@ -439,6 +440,12 @@ const MyTask: React.FC = () => {
         }`}>
           {taskItem.Title}
         </div>
+        {/* Show description only for pending tasks */}
+        {!isCompletedList && taskItem.Description && (
+          <div className={styles.taskDescription}>
+            {taskItem.Description}
+          </div>
+        )}
         <div className={`${styles.taskTime} ${styles[getTaskStatusForStyling(taskItem) as keyof typeof styles]}`}>
           {isCompletedList
             ? taskItem.CompletionDate || `Completed on: ${dayjs(taskItem.TaskEndDate).format('MMM DD, YYYY')}`

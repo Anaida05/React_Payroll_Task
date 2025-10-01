@@ -93,6 +93,13 @@
   color: #333;
 }
 
+.taskDescription {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
 .taskTitle.completedNonPending {
   text-decoration: line-through;
   opacity: 0.7;
