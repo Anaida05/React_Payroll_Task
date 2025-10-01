@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyTask, setFilterApplied, updateStarStatus, FetchMyTaskParams, markTaskCompleted, undoTask, updateTaskProgress } from "../../slices/myTaskSlice";
+import { addTask } from "../../slices/taskSlice";
 import { AppDispatch } from "../../../store/store";
 import toast from "react-hot-toast";
 import {
@@ -15,7 +16,7 @@ import styles from "./MyTask.module.css";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import Loader from "../../shared/Loader/Loader";
-import NewTaskModal from "./NewTaskModal";
+import AddTaskModal from "../../shared/AddTaskModal";
 import FilterTask from "./FilterTask";
 import PercentageModal from "./PercentageModal";
 
@@ -93,10 +94,11 @@ const MyTask: React.FC = () => {
     setNewTaskModalOpen(false);
   };
 
-  const handleNewTaskSave = (taskData: any) => {
-    console.log("New task data:", taskData);
-    // Here you can integrate with your existing addTask functionality
-    // For now, just close the modal
+  const handleNewTaskSave = async () => {
+    console.log("Task saved successfully!");
+    // Refresh the task list after adding a new task
+    const params = getTaskParams();
+    dispatch(fetchMyTask(params));
     setNewTaskModalOpen(false);
   };
 
@@ -618,11 +620,12 @@ const MyTask: React.FC = () => {
       <div className={styles.pagination}>
       </div>
 
-      {/* New Task Modal */}
-      <NewTaskModal
+      {/* Add Task Modal */}
+      <AddTaskModal
         open={newTaskModalOpen}
         onClose={handleNewTaskModalClose}
-        onSave={handleNewTaskSave}
+        currentUserId={1248} // Replace with actual user ID
+        onSuccess={handleNewTaskSave}
       />
 
       {/* Filter Modal */}

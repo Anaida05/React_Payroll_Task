@@ -1,6 +1,6 @@
 
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { ADDTASK, TASK, STARRED_TASK_FIELD, ACCEPT_TASK, UPDATE_TASK_STATUS, UPDATE_TASK_FIELD } from "../services/apiEndPoints";
+import { ADDTASK, ADD_TASK, TASK, STARRED_TASK_FIELD, ACCEPT_TASK, UPDATE_TASK_STATUS, UPDATE_TASK_FIELD } from "../services/apiEndPoints";
 import { privatePost, privatePut } from "../services/privateRequest";
 import toast from "react-hot-toast";
 
@@ -70,9 +70,16 @@ export const fetchMyTask = createAsyncThunk(
   }
 );
 
-export const addTask=createAsyncThunk("post/addTask",async(params)=>{
-  const res=await privatePost(ADDTASK,params)
-  toast.success("new task added successfully")
+export const addTask=createAsyncThunk("post/addTask",async(params, { rejectWithValue })=>{
+  try {
+    const res=await privatePost(ADD_TASK,params)
+    toast.success("new task added successfully")
+    return res.data
+  } catch (error: any) {
+    console.error("Add Task Error:", error);
+    toast.error("Failed to add task");
+    return rejectWithValue(error?.response?.data || "Failed to add task");
+  }
 })
 
 export const updateStarStatus = createAsyncThunk(
@@ -273,6 +280,21 @@ const taskSlice = createSlice({
       state.error = true;
     });
     builder.addCase(updateTaskProgress.rejected, (state, action) => {
+      state.error = true;
+    });
+    
+    // Add Task cases
+    builder.addCase(addTask.pending, (state) => {
+      state.loading = true;
+      state.error = false;
+    });
+    builder.addCase(addTask.fulfilled, (state, action) => {
+      state.loading = false;
+      state.error = false;
+      // Optionally refresh the task list after adding a new task
+    });
+    builder.addCase(addTask.rejected, (state) => {
+      state.loading = false;
       state.error = true;
     });
   },
