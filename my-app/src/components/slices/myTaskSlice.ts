@@ -65,7 +65,6 @@ export const fetchMyTask = createAsyncThunk(
   "get/fetchMyTask",
   async (params: FetchMyTaskParams) => {
     const res = await privatePost(TASK, params);
-    console.log("API Response:", res.data);
     return {data: res.data, params};
   }
 );
@@ -117,11 +116,7 @@ export const undoTask = createAsyncThunk(
         TaskStatusValue: 0, // 0 represents Pending status
       };
       
-      console.log("Undo Task - Payload:", payload);
-      
-      const response = await privatePost(UPDATE_TASK_STATUS, payload);
-      console.log("Undo Task - Response:", response);
-      
+      const response = await privatePost(UPDATE_TASK_STATUS, payload);      
       toast.success("Task moved back to Pending");
       
       // Don't refetch tasks - let the component handle the UI update
@@ -144,13 +139,8 @@ export const updateTaskProgress = createAsyncThunk(
         Value: progress,
         IsMyTask: true,
       };
-
-      console.log("Update Task Progress - URL:", urlWithTaskId);
-      console.log("Update Task Progress - Payload:", payload);
       
-      const response = await privatePut(urlWithTaskId, payload);
-      console.log("Update Task Progress - Response:", response);
-      
+      const response = await privatePut(urlWithTaskId, payload);      
       toast.success(`Task progress updated to ${progress}%`);
       
       return { taskId, progress };
@@ -169,11 +159,8 @@ export const markTaskCompleted = createAsyncThunk(
         TaskId: taskId,
         TaskStatusValue: 100,
       };
-
-      console.log("Mark Task Completed - Payload:", payload);
       
       const response = await privatePost(ACCEPT_TASK, payload);
-      console.log("Mark Task Completed - Response:", response);
       
       toast.success("Task moved to Completed");
       
@@ -214,10 +201,7 @@ const taskSlice = createSlice({
     });
     builder.addCase(fetchMyTask.fulfilled, (state, action) => {
       state.loading = false;
-      console.log("Redux - Full payload:", action.payload);
-      console.log("Redux - Data:", action.payload.data);
-      
-      // Handle the actual API response structure
+  // Handle the actual API response structure
       const responseData: any = action.payload.data;
       
       if (responseData && responseData.Status === 200) {
@@ -260,11 +244,7 @@ const taskSlice = createSlice({
           state.task = [];
           state.totalCount = 0;
         }
-      }
-      
-      console.log("Redux - Final task array:", state.task);
-      console.log("Redux - Final total count:", state.totalCount);
-      
+      } 
       state.lastParams = action.payload.params;
     });
     builder.addCase(fetchMyTask.rejected, (state) => {

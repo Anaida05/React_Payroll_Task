@@ -121,13 +121,7 @@ export const addTask = createAsyncThunk<void, any>(
   "task/addTask",
   async (payload, { dispatch, rejectWithValue }) => {
     try {
-      console.log("taskSlice - Received payload:", payload);
-      
-      // Send the payload directly to the API
-      const response = await privatePost(ADD_TASK, payload);
-      
-      console.log("taskSlice - API Response:", response);
-      
+      const response = await privatePost(ADD_TASK, payload);      
       toast.success("Task added successfully");
       
       // Optionally refresh tasks after adding

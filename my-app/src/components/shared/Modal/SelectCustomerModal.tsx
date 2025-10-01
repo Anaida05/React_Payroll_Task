@@ -77,11 +77,8 @@ const SelectCustomerModal: React.FC<SelectCustomerModalProps> = ({
         To: 50, // Increased limit to show more customers
       };
 
-      console.log("Fetching customers with payload:", payload);
       const response: LeadsResponse = await privatePost(GET_ALL_LEADS, payload);
       
-      console.log("Customers API Response:", response);
-
       if (response.Status === 200 && response.data && response.data.Leads) {
         setCustomers(response.data.Leads);
       } else {

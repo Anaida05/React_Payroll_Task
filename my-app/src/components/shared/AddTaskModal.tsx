@@ -153,10 +153,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({
       })),
     };
 
-    console.log("AddTaskModal - Sending payload:", serverPayload);
     
     dispatch(addTask(serverPayload) as any).then((res: any) => {
-      console.log("AddTaskModal - Response:", res);
       if (res.meta.requestStatus === "fulfilled") {
         handleClose();
         if (onSuccess) onSuccess();
