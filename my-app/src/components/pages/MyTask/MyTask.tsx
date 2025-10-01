@@ -432,7 +432,13 @@ const MyTask: React.FC = () => {
 
       {/* Left side: Title and time */}
       <div className={styles.taskLeft}>
-        <div className={styles.taskTitle}>{taskItem.Title}</div>
+        <div className={`${styles.taskTitle} ${
+          isCompletedList && !taskItem.Title.toLowerCase().includes('pending') 
+            ? styles.completedNonPending 
+            : ''
+        }`}>
+          {taskItem.Title}
+        </div>
         <div className={`${styles.taskTime} ${styles[getTaskStatusForStyling(taskItem) as keyof typeof styles]}`}>
           {isCompletedList
             ? taskItem.CompletionDate || `Completed on: ${dayjs(taskItem.TaskEndDate).format('MMM DD, YYYY')}`
